@@ -1,8 +1,10 @@
 /* app css stylesheet */
 
+/*body, html {height:100%;}*/
+
 .menu {
   list-style: none;
-  border-bottom: 0.1em solid black;
+  border-bottom: 0.81em solid black;
   margin-bottom: 2em;
   padding: 0 0 0.5em;
 }
@@ -22,4 +24,76 @@
 .menu > li + li:before {
   content: "|";
   padding-right: 0.3em;
+}
+
+.toolbar-height-hack {
+	height: 93%;
+}
+
+.md-toolbar-title {
+	font-size: 24px;
+	font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+	font-style: italic;
+}
+
+.md-toolbar-text {
+	font-size: 24px;
+	font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+}
+
+.md-accordion-toggle.md-active .accordion-arrow {
+	transform: rotate(-180deg) translateZ(0);
+}
+.md-accordion .md-button {
+	height: 20px;
+	min-height: 20px;
+	margin: 0;
+	margin-bottom: 10px;
+	padding: 0 0;
+	background-color: #f6f6f6;
+	font-size: 16px;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.md-button {
+	line-height:0;
+}
+
+.fa-chevron-down:before {
+	color:#607D8B;
+	font-weight: 500;
+	font-size: 12px;
+}
+
+
+.md-button {    
+    text-transform: none
+}
+md-checkbox.md-checkbox-small {
+	transform: scale(0.75);
+}
+
+.md-accordion-content {
+  min-height: 20px;
+}
+
+md-input-container.md-opacity {
+  padding: 0px;
+  margin: 0px 0;
+	transform: scale(0.85);
+}
+.layer-name {
+	font-size:14px;
+}
+
+#registration md-input-container {
+	margin-top: 5px;
+}
+
+md-checkbox#showAllGroups .md-label {
+    margin-left: -120px;
+}
+
+md-checkbox#showAllLayers .md-label {
+    margin-left: -115px;
 }

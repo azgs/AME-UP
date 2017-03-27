@@ -1,79 +1,106 @@
 <!DOCTYPE html>
 <html ng-app="mapApp">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>My AngularJS App</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+	<base href="/">
+  
+	<title>AME-UP</title>
     <script src="/bower_components/openlayers/ol.js"></script>
     <script src="/bower_components/angular/angular.min.js"></script>
 	<script src="/bower_components/angular-animate/angular-animate.min.js"></script>
 	<script src="/bower_components/angular-aria/angular-aria.min.js"></script>
 	<script src="/bower_components/angular-messages/angular-messages.min.js"></script>
 	<script src="/bower_components/angular-material/angular-material.min.js"></script>
-
+	<script src="/bower_components/angular-resource/angular-resource.js"></script>
+	<script src="/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+	
     <script src="/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
     <script src="/bower_components/angular-openlayers-directive/dist/angular-openlayers-directive.js"></script>
 	<script src="app.js"></script>
-	<script src="MapController/MapController.js"></script>
-    <link rel="stylesheet" href="/bower_components/openlayers/ol.css" />
+	<script src="app.config.js"></script>
+	<script src="map/map.controller.js"></script>
+	<script src="login/login.component.js"></script>
+	<script src="project/project.controller.js"></script>
+	<script src="common/auth/auth.service.js"></script>
+	<script src="common/api/api.service.js"></script>
+	<script src="common/settings/settings.service.js"></script>
+	<link rel="stylesheet" href="/bower_components/openlayers/ol.css" />
     <link rel="stylesheet" href="/bower_components/angular-material/angular-material.min.css">
 
-<style>
-.ol-zoom {
-  left: unset;
-  right: 8px
-}
+	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bower_components/angular-material-accordion/dist/angular-material-accordion.css">
+	<script src="/bower_components/angular-material-accordion/dist/angular-material-accordion.js"></script>
 
-</style>
+    <link rel="stylesheet" href="app.css" />
+
 </head>
 
-<body ng-controller="MapController">
+
+<body ng-controller="AuthCatcher">
+	<div style="height:100%; overflow:hidden;">
 	
-	<div layout="row" layout-fill>
-		<md-sidenav md-component-id="left" class="md-sidenav-left" md-is-locked-open="$mdMedia('min-width: 333px')" style="width: 35%">
-			<md-tabs layout-fill>
-				<md-tab label="Layers" >
-					<md-tab-body >
-						<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
-							<form>
-								<div ng-repeat="layer in layers" >
-									<md-checkbox style="margin-bottom:0px;margin-top:20px" ng-model="layer.active" aria-label={{ layer.name }}>
-									{{ layer.name }}
-									</md-checkbox>
-									<md-slider style="margin-left:30px;margin-right:15px" min="0" max="1" step="0.01" ng-model="layer.opacity" ></md-slider>
-									<md-divider></md-divider>
-								 </div>
-							</form>
-						</md-content>
-					</md-tab-body>
-				</md-tab>
-				<md-tab label="Models">
-					<md-tab-body>
-						<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
-						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in cursus odio, eget malesuada est. Quisque commodo odio sit amet mauris aliquam, in viverra nisi lobortis. Donec in nisl ullamcorper, tristique arcu sit amet, ornare sem. Nam fermentum, nulla in pellentesque euismod, quam sem aliquam nisi, id auctor eros ex et lacus. Integer semper erat quis sem semper pulvinar. Mauris pellentesque sodales lorem. Donec interdum et magna eget luctus. Nam vestibulum metus ac mi suscipit scelerisque. Pellentesque aliquam gravida leo eu commodo. Pellentesque sed tristique augue. Donec varius blandit dolor, sit amet venenatis nibh laoreet ut. Nunc suscipit magna quis elit ullamcorper tincidunt.</p>
+		<md-toolbar>
+			<div class="md-toolbar-tools">
+				<md-button ng-if="isAuthenticated()" class="md-icon-button md-no-focus" aria-label="Side Panel" ng-click="toggleSideNav()">
+					 <!--<md-tooltip>Controls</md-tooltip>-->
+					 <md-icon md-font-icon="fa-bars"  class="fa" style="font-size:25px"></md-icon>
+				</md-button>
 
-						<p>Vivamus vulputate placerat enim sit amet volutpat. Maecenas eget ultricies ante, ut consequat augue. Nunc lacus elit, viverra et suscipit at, mattis non erat. Morbi lorem arcu, porttitor id mauris sed, semper scelerisque nunc. Nullam luctus urna mi, et vehicula neque scelerisque eu. Aliquam tincidunt leo id leo finibus, varius mattis dui ornare. Duis porttitor sagittis risus, non scelerisque magna ultrices id. Donec scelerisque, neque vitae ullamcorper volutpat, tortor urna placerat felis, sit amet condimentum ante dolor sed neque. Cras rhoncus bibendum est sed suscipit. Donec nec dignissim ex. Nulla at suscipit neque, eget mollis libero. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-						</md-content>
-					</md-tab-body>
-				</md-tab>
-				<md-tab label="Results">
-					<md-tab-body >
-						<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
-							<p>Maecenas vel fermentum purus. Duis ac sagittis erat, non consequat felis. Nullam bibendum iaculis ante vel suscipit. Suspendisse tincidunt maximus purus nec scelerisque. Aliquam hendrerit, lacus non luctus auctor, metus dui tristique mauris, at sagittis neque sem et nisi. Vivamus ultricies efficitur ante. Nullam ipsum eros, pulvinar ut congue vitae, ornare vitae est. Sed suscipit a lorem at lacinia. Mauris eu ante dui. Sed diam nunc, ultricies non neque quis, facilisis sodales velit. Sed hendrerit facilisis odio scelerisque eleifend. Proin nec mi sit amet elit congue sodales sed sit amet erat. Aliquam commodo, lacus id vulputate volutpat, dolor nisi tincidunt ipsum, vitae sollicitudin odio justo sit amet sem. Sed non fermentum lacus. Vivamus ipsum nulla, tristique nec laoreet at, rhoncus in magna.</p>
-
-							<p>Vivamus placerat velit ac justo hendrerit, ac dapibus metus efficitur. Donec gravida dui lectus, et feugiat odio tempor sed. Donec eu auctor mauris. Vestibulum maximus libero ac congue commodo. Integer tempor ante odio. Nullam sit amet ex pellentesque erat faucibus eleifend id in velit. Fusce tincidunt libero nunc, a aliquet nisi gravida ut. Vestibulum luctus tortor libero, eu venenatis ipsum tempus venenatis. Praesent non risus ac sapien convallis gravida vitae eget turpis. Cras eleifend odio et enim eleifend, sed vestibulum enim maximus. Sed volutpat augue in porttitor tristique.</p>
-
-						</md-content>
-					</md-tab-body>
-				</md-tab>
-			</md-tabs>
-		</md-sidenav>
-
-		<md-content>
-			<openlayers  ol-center="center" custom-layers="true" style="width: 70%; height: 100%; position:fixed">
-					<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers|filter: { active: true}"></ol-layer>
-			</openlayers>
-		</md-content>
+				<span class="md-toolbar-title">AME-UP Arizona Military Energy Land Use Plan</span>
+				<span flex=""></span>
+				<h2>{{projectData.currentProject.name}}</h2>
+				<md-menu ng-if="isAuthenticated()" md-position-mode="target-right target" md-offset="0 40">
+					<md-button ng-click="$mdOpenMenu($event)" style="min-width:60px" class="md-icon-button" aria-label="User" >
+						<md-icon md-menu-origin="" md-font-icon="fa-user-circle-o"  class="fa" style="font-size:40px"></md-icon>
+					</md-button>
+					<md-menu-content>
+						<md-menu-item><md-button style="font-size: 120%; font-weight: bold;" ng-click="notImplemented()">{{authData.username}}</md-button></md-menu-item>
+						<md-divider></md-divider>
+						<md-menu-item><md-button ng-click="logout()">Logout</md-button></md-menu-item>
+					</md-menu-content>
+				</md-menu>
+			</div>
+		</md-toolbar>
+ 
+ 		<div class="toolbar-height-hack">
+			<span ui-view></span>
+		</div>
+				
 	</div>
+	
+	<md-sidenav md-component-id="main" class="md-sidenav-left" style="width: 35%;height="100%">
+		<md-toolbar>
+			<div class="md-toolbar-tools">
+				<md-button class="md-icon-button md-no-focus" aria-label="Close Panel" ng-click="toggleSideNav()">
+					 <!--<md-tooltip>Close</md-tooltip>-->
+					 <md-icon md-font-icon="fa-arrow-left"  class="fa" style="font-size:25px"></md-icon>
+				</md-button>
+
+				<h1>Controls</h1>
+				<span flex=""></span>
+			</div>
+		</md-toolbar>
+		<md-content layout-margin=""  ng-controller="ProjectController">
+			<md-button class="md-primary" ng-click="newProject()">
+				 <md-icon md-font-icon="fa-plus-square-o"  class="fa" style="font-size:25px"></md-icon>
+				 New Project
+			</md-button><br/>
+			<md-button class="md-primary" ng-click="openProject($event)">
+				 <md-icon md-font-icon="fa-folder-open-o"  class="fa" style="font-size:25px"></md-icon>
+				 Open project...
+			</md-button><br/>
+			<md-button class="md-primary" ng-click="saveProject($event)">
+				 <md-icon md-font-icon="fa-save"  class="fa" style="font-size:25px"></md-icon>
+				 Save project...
+			</md-button><br/>
+			<md-button class="md-primary"  ng-click="deleteProject($event)">
+				 <md-icon md-font-icon="fa-trash-o"  class="fa" style="font-size:25px"></md-icon>
+				 Delete project
+			</md-button><br/>
+		</md-content>
+	</md-sidenav>
+
 </body>
 </html>

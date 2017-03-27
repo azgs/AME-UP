@@ -1,0 +1,71 @@
+		<div layout="column" class="ng-scope layout-row">
+			<div class="flex-20" >
+				<md-sidenav flex md-component-id="left" class="md-sidenav-left" md-is-locked-open="$mdMedia('min-width: 100px')"
+						style="background-color: #86b8da;  height:100%">
+					<md-header layout-padding></md-header>
+					<md-header layout-padding style="background-color: #86b8da; font-weight: bold">Additional Resources</md-header>
+					<md-list class="md-dense" flex>
+						<md-list-item class="md-2-line">
+							<div class="md-list-item-text" layout="column">
+								<h3 style="font-size: small">California State Mapping Tool</h3>
+								<a style="font-size: small" target="_blank" href="http://cmluca.gis.ca.gov/">CMLUCA</a>
+							</div>
+						</md-list-item>
+						<md-list-item class="md-2-line">
+							<div class="md-list-item-text" layout="column">
+								<h3 style="font-size: small">DOE - Energy Zones Mapping Tool</h3>
+								<a style="font-size: small" target="_blank" href="http://ezmt.anl.gov/">EZMT</a>
+							</div>
+						</md-list-item>
+						<md-list-item class="md-2-line">
+							<div class="md-list-item-text" layout="column">
+								<h3 style="font-size: small">DOE - Energy Corridor</h3>
+								<a style="font-size: small" target="_blank" href="http://bogi.evs.anl.gov/section368/portal">Section 368</a>
+							</div>
+						</md-list-item>
+						<md-list-item class="md-2-line">
+							<div class="md-list-item-text" layout="column">
+								<h3 style="font-size: small">DOD - REPI Tool</h3>
+								<a style="font-size: small" target="_blank" href="http://www.repimap.org/">Readiness & Environmental Integration</a>
+							</div>
+						</md-list-item>
+
+					</md-list>
+				</md-sidenav>
+			</div>
+			
+			<div class="flex-40" style=" height:100%" class="two">
+				<md-content layout-padding>
+				</md-content>
+				<md-content layout-padding>
+					<md-header layout-padding class="md-no-sticky" style="font-weight: bold">Background/Introduction</md-header>
+					<md-whiteframe class="md-whiteframe-0dp"  layout layout-align="center left" style="font-size: small">
+						Continued growth of the energy sector in Arizona will carry on into our future. While this is an economic
+						advantage to the state, new energy infrastructure can potentially encroach on military operations. This
+						necessitates completing an early review of new projects, which are crucial to retaining our installations.
+					</md-whiteframe>
+					<md-whiteframe class="md-whiteframe-0dp" layout layout-align="center left" style="font-size: small">
+						By 2013, Arizona ranked second in the nation for utility-scale electricity generation from solar energy,
+						second only to California. By contrast, according to the Arizona Commerce Authority, because of the
+						continued use of fossil fuels, more than half of all expenditures for energy leave the state and are not
+						reinvested in local economies. Proper implementation and maintenance of renewable energy projects
+						will reduce demand on imported fossil fuel, thus keeping more money in-state.
+					</md-whiteframe>
+					<md-whiteframe class="md-whiteframe-0dp" layout layout-align="center center">
+						<img src="assets/images/ameup.png" width="75%" class="md-card-image" alt="image caption">
+					</md-whiteframe>
+				</md-content>
+			</div>
+
+			<div class="flex-15" style=" height:100%" class="three">
+				<div ng-if="!isAuthenticated()">
+					<md-subheader layout-padding layout-align="top center" class="md-no-sticky" style="align: center; font-weight: bold; margin-bottom:0px; padding-bottom:0px">Map Login</md-subheader>
+					<login></login>
+				</div>
+				<div ng-if="isAuthenticated()" layout="column" layout-padding layout-align="top center" layout-fill style="margin-top:20px; min-height:500px">
+					<md-whiteframe id="registration" class="md-whiteframe-12dp" style="padding: 1em 1em 1em 1em">
+						<a ui-sref="map"><md-button class="md-primary md-raised">Map</md-button></a>
+					</md-whiteframe>
+				</div>
+			</div>
+		</div>

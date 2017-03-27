@@ -1,0 +1,41 @@
+<div ng-controller="ProjectListController" layout="row" layout-fill>
+<!--<div layout="row" layout-fill>-->
+<div class="md-dialog-container ng-scope" tabindex="-1" style="top: 0px; height: 533px;"><div class="md-dialog-focus-trap" tabindex="0"></div>
+  <md-dialog md-theme="default" ng-class="dialog.css" class="_md md-default-theme md-transition-in">
+  <form>
+    <md-dialog-content class="md-dialog-content" >
+		<h2 class="md-title">Open Project</h2>
+
+		<!--
+		<md-radio-group ng-model="tmpProject">
+			<md-radio-button ng-repeat="project in projects | orderBy: -modifiedDate" ng-value="project.id" aria-label="{{ project.name }}">
+				{{ project.name }}
+			</md-radio-button>
+		</md-radio-group>
+		-->
+		<md-input-container>
+			<label>Choose project</label>
+			<md-select name="selectProject" ng-model="tmpSelect">
+				<md-option ng-repeat="project in projects | orderBy: modifiedDate : reverse" ng-value="project.id" aria-label="{{ project.name }}">
+					{{project.name}}
+				</md-option>
+			</md-select>
+		</md-input-container>
+		
+    </md-dialog-content>
+		
+    <md-dialog-actions layout="row">
+		<span flex></span>
+		<md-button ng-click="cancel()" class="md-primary md-cancel-button">Cancel</md-button>
+ 		<md-button ng-if="!tmpSelect" ng-disabled="true" class="md-primary md-confirm-button">Select</md-button>
+ 		<md-button ng-if="tmpSelect" ng-click="answer(tmpSelect)" class="md-primary md-confirm-button">Select</md-button>
+   </md-dialog-actions>
+  </form>
+</md-dialog>
+</div>
+		
+</div>
+
+
+
+
