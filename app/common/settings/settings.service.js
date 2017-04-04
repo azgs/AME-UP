@@ -64,7 +64,7 @@ angular.module('SettingsService', ['APIService'])
 				data.center.lat = project.centerLat;
 				data.center.lon = project.centerLon;
 				data.center.zoom = project.zoom;
-				data.showAll = project.showAll;
+				data.showAll = true; //project.showAll;
 				project.groups.forEach(group => {
 					data.groups.push(JSON.parse(JSON.stringify(group)));
 				});
@@ -72,10 +72,10 @@ angular.module('SettingsService', ['APIService'])
 					data.layers.push(JSON.parse(JSON.stringify(layer)));
 				});
 			} else {
-				data.center.lat = APP_CONFIG.initialLat;
-				data.center.lon = APP_CONFIG.initialLon;
-				data.center.zoom = APP_CONFIG.initialZoom;
-				data.showAll = false;
+				//data.center.lat = APP_CONFIG.initialLat;
+				//data.center.lon = APP_CONFIG.initialLon;
+				//data.center.zoom = APP_CONFIG.initialZoom;
+				data.showAll = true;
 				console.log("calling API for groups");
 				let remoteGroups = LayerGroups.query(function() {
 					console.log("groups call completed");
@@ -118,13 +118,19 @@ angular.module('SettingsService', ['APIService'])
 							}
 
 							if (layer.source.type === "TileArcGISRest") {
-								$http.get(layer.source.legend_url).
+								$http.get(layer.source.legend_url)/*.
 									success(function(data, status, headers, config) {
 										layer.legend_json = data;
 									}).
 									error(function(data, status, headers, config) {
 										layer.legend_json = "not available";
-									});
+									});*/
+									.then(function success(response){
+											layer.legend_json = response.data;
+										  },
+										  function error(response){
+											layer.legend_json = "not available";
+										  });
 							}
 
 							//console.log("layer:");
