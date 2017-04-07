@@ -1,14 +1,13 @@
 			<div ng-controller="MapController" layout="row" layout-fill>
 			
-				<!--<md-sidenav md-component-id="left" class="md-sidenav-left" md-is-locked-open="$mdMedia('min-width: 333px')" style="width: 35%;height:100%">-->
-				<md-content style="width: 29%;height:100%">
+				<md-sidenav md-component-id="left" class="md-sidenav-left" md-is-locked-open="$mdMedia('min-width: 333px')" style="width: 35%;height="100%">
 					<md-tabs layout-fill>
 						<md-tab label="Layers">
 							<md-tab-body>
 								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
 									<form>
 									
-										<!-- uncomment to enable Show All
+										<!-- uncomment to enable Show All -->
 										<md-button ng-click="toggleShowAllGroups()" class="md-icon-button md-accent" style="margin-left:90%;" aria-label="ShowAll">
 											<md-icon ng-if="data.showAll" md-font-icon="fa-list-ul"  class="fa" style="font-size:20px"></md-icon>
 											<md-tooltip ng-if="data.showAll" md-direction="left" md-autohide="true">
@@ -19,7 +18,7 @@
 												Show All Groups
 											</md-tooltip>
 										</md-button>
-										-->
+										<!-- -->
 										
 										<md-accordion>
 											<div ng-repeat="group in groups | filter: (data.showAll ? '' : {active:true})" ol-layer-properties="group">
@@ -32,7 +31,7 @@
 													
 														<span flex=""></span>
 
-														<!-- uncomment to enable Show All
+														<!-- uncomment to enable Show All -->
 														<md-button ng-click="toggleShowAllLayers(group)" class="md-icon-button md-accent" style="margin-left:85%;" aria-label="ShowAll">
 															<md-icon ng-if="group.showAll" md-font-icon="fa-list-ul"  class="fa" style="font-size:20px"></md-icon>
 															<md-tooltip ng-if="group.showAll" md-direction="left" md-autohide="true">
@@ -43,7 +42,7 @@
 																Show All Layers
 															</md-tooltip>
 														</md-button>
-														-->
+														<!-- -->
 														
 														<!--<div ng-repeat="layer in layers | filter:{group:group.name}" style="margin-left:10px">-->
 														<!--<div ng-repeat="layer in layers | filter: (group.showAll ? {group:group.name} : {group:group.name, active:true}) | orderBy: '-active'" style="margin-left:10px">-->
@@ -123,11 +122,10 @@
 							</md-tab-body>
 						</md-tab>
 					</md-tabs>
-				<!--</md-sidenav>-->
-				</md-content>
-	
-				<md-content style="width:71%;height:100%">
-					<openlayers  width="71%" height="93%" ol-defaults="defaults" ol-center="center" custom-layers="true" style="position:fixed">
+				</md-sidenav>
+
+				<md-content>
+					<openlayers  width="100%" height="93%" ol-defaults="defaults" ol-center="center" custom-layers="true" style="width: 70%; height: 100%; position:fixed">
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers|filter: { active: true}"></ol-layer>
 					</openlayers>
