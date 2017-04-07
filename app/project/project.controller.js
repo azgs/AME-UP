@@ -63,7 +63,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
   	
 	$scope.saveProject = function(ev) {
 		console.log("saveProject, ProjectSettings.data.currentProjectName = " + ProjectSettings.data.currentProjectName);
-		if (ev.currentTarget.id == 'saveAs' || !ProjectSettings.data.currentProject) {
+		if (!ProjectSettings.data.currentProject) {
 			const confirm = $mdDialog.prompt()
 				.title('Project Name')
 				.textContent('What would you like to call this project?')

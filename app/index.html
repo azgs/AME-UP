@@ -50,7 +50,7 @@
 
 				<span class="md-toolbar-title">AME-UP Arizona Military Energy Land Use Plan</span>
 				<span flex=""></span>
-				<span ng-if="isAuthenticated()"><h2>{{projectData.currentProject.name == undefined ? "(new project)" : projectData.currentProject.name}}</h2></span>
+				<h2>{{projectData.currentProject.name}}</h2>
 				<md-menu ng-if="isAuthenticated()" md-position-mode="target-right target" md-offset="0 40">
 					<md-button ng-click="$mdOpenMenu($event)" style="min-width:60px" class="md-icon-button" aria-label="User" >
 						<md-icon md-menu-origin="" md-font-icon="fa-user-circle-o"  class="fa" style="font-size:40px"></md-icon>
@@ -91,13 +91,9 @@
 				 <md-icon md-font-icon="fa-folder-open-o"  class="fa" style="font-size:25px"></md-icon>
 				 Open project...
 			</md-button><br/>
-			<md-button id="save" class="md-primary" ng-click="saveProject($event)">
+			<md-button class="md-primary" ng-click="saveProject($event)">
 				 <md-icon md-font-icon="fa-save"  class="fa" style="font-size:25px"></md-icon>
 				 Save project...
-			</md-button><br/>
-			<md-button id="saveAs" class="md-primary" ng-click="saveProject($event)">
-				 <md-icon md-font-icon="fa-save"  class="fa" style="font-size:25px"></md-icon>
-				 Save project as...
 			</md-button><br/>
 			<md-button class="md-primary"  ng-click="deleteProject($event)">
 				 <md-icon md-font-icon="fa-trash-o"  class="fa" style="font-size:25px"></md-icon>

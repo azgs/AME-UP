@@ -65,40 +65,116 @@ angular.module('SettingsService', ['APIService'])
 				data.center.lon = project.centerLon;
 				data.center.zoom = project.zoom;
 				data.showAll = project.showAll;
+				project.groups.forEach(group => {
+					data.groups.push(JSON.parse(JSON.stringify(group)));
+				});
+				project.layers.forEach(layer => {
+					data.layers.push(JSON.parse(JSON.stringify(layer)));
+				});
+			} else {
+				data.center.lat = APP_CONFIG.initialLat;
+				data.center.lon = APP_CONFIG.initialLon;
+				data.center.zoom = APP_CONFIG.initialZoom;
+				data.showAll = false;
+				console.log("calling API for groups");
+				let remoteGroups = LayerGroups.query(function() {
+					console.log("groups call completed");
+					remoteGroups.forEach(function(group) {
+						group.active = true;
+						group.showAll = data.showAll;
+						data.groups.push(group);
+					});
+					
+					console.log("calling API for layers");
+					let remoteLayers = Layers.query(function() {
+						console.log("layers call completed");
+						remoteLayers.forEach(function(remoteLayer) {
+							let layer = {
+								name: remoteLayer.name,
+								group: remoteLayer.layer_group,
+								active: remoteLayer.is_initially_active,
+								opacity: remoteLayer.opacity ? 
+									remoteLayer.opacity : 
+									remoteLayer.layer_group === data.groups[0].name ? 1 : 0.5, //Base maps get full opacity, all others get half
+								layerType: remoteLayer.layer_type,
+								source: {
+									type: remoteLayer.source_type,
+									url: remoteLayer.source_url,
+									legend_url: remoteLayer.legend_url,
+									key: remoteLayer.key,
+									layer: remoteLayer.layer,
+									imagery_set: remoteLayer.imagery_set
+								}
+							};
+							
+							layer.source.params = {};
+							remoteLayer.params.forEach(function(remoteParam) {
+								layer.source.params [remoteParam.name] = remoteParam.value;
+							});
+							
+							if (remoteLayer.is_cors_challenged) {
+								layer.source.url = APP_CONFIG.corsProxy + layer.source.url;
+								layer.source.legend_url = APP_CONFIG.corsProxy + layer.source.legend_url;
+							}
+
+							if (layer.source.type === "TileArcGISRest") {
+								$http.get(layer.source.legend_url).
+									success(function(data, status, headers, config) {
+										layer.legend_json = data;
+									}).
+									error(function(data, status, headers, config) {
+										layer.legend_json = "not available";
+									});
+							}
+
+							//console.log("layer:");
+							//console.log(layer);
+							data.layers.push(layer);
+							
+						});
+					});
+					
+				});
+			}
+		
+/**		
+			if (data.groups) {
+				console.log("resetting groups array");
+				data.groups.length = 0;
+			} else {
+				console.log("creating new groups array");
+				data.groups = [];
+			}
+
+			if (project) {
+				project.groups.forEach(group => {
+					data.groups.push(JSON.parse(JSON.stringify(group)));
+				});
+			} else {
+				console.log("calling API for groups");
+				let remoteGroups = LayerGroups.query(function() {
+					console.log("groups call completed");
+					remoteGroups.forEach(function(group) {
+						group.active = true;
+						group.showAll = data.showAll;
+						data.groups.push(group);
+					});
+				});
+			}
+
+			if (data.layers) {
+				console.log("resetting layers array");
+				data.layers.length = 0;
+			} else {
+				console.log("creating new layers array");
+				data.layers = [];
 			}
 			
-			//data.center.lat = APP_CONFIG.initialLat;
-			//data.center.lon = APP_CONFIG.initialLon;
-			//data.center.zoom = APP_CONFIG.initialZoom;
-			data.showAll = true;
-			console.log("calling API for groups");
-			let remoteGroups = LayerGroups.query(function() {
-				console.log("groups call completed");
-				remoteGroups.forEach(function(group) {
-					group.active = true;
-					group.showAll = data.showAll;
-					data.groups.push(group);
+			if (project) {
+				project.layers.forEach(layer => {
+					data.layers.push(JSON.parse(JSON.stringify(layer)));
 				});
-				
-				console.log("data.groups = ");console.log(data.groups);
-				console.log("data.groups[0].name = " + data.groups[0].name);
-				if (project) {
-					data.groups.forEach(group => {group.active = false;}); //set everything to inactive initially
-					console.log("loading project");
-					project.groups.forEach(group => {
-						let parsedGroup = JSON.parse(JSON.stringify(group));
-						console.log("parsedGroup.name = " + parsedGroup.name);
-						let index = data.groups.findIndex(element => element.name == parsedGroup.name);
-						console.log("index = " + index + " "); console.log(data.groups[index]);
-						if (index > -1) {
-							data.groups[index].active = parsedGroup.active;
-							data.groups[index].showAll = true; //parsedGroup.showAll;
-							data.groups[index].inProject = true;
-						}
-					});
-				}
-
-				
+			} else {
 				console.log("calling API for layers");
 				let remoteLayers = Layers.query(function() {
 					console.log("layers call completed");
@@ -132,13 +208,13 @@ angular.module('SettingsService', ['APIService'])
 						}
 
 						if (layer.source.type === "TileArcGISRest") {
-							$http.get(layer.source.legend_url)
-								.then(function success(response){
-										layer.legend_json = response.data;
-									  },
-									  function error(response){
-										layer.legend_json = "not available";
-									  });
+							$http.get(layer.source.legend_url).
+								success(function(data, status, headers, config) {
+									layer.legend_json = data;
+								}).
+								error(function(data, status, headers, config) {
+									layer.legend_json = "not available";
+								});
 						}
 
 						//console.log("layer:");
@@ -146,26 +222,9 @@ angular.module('SettingsService', ['APIService'])
 						data.layers.push(layer);
 						
 					});
-					
-					if (project) {
-						data.layers.forEach(layer => {layer.active = false;}); //set all to inactive initially
-						project.layers.forEach(layer => {
-							let parsedLayer = JSON.parse(JSON.stringify(layer));
-							console.log("parsedLayer.name = " + parsedLayer.name);
-							let index = data.layers.findIndex(element => element.name == parsedLayer.name);
-							console.log("index = " + index + " "); console.log(data.layers[index]);
-							if (index > -1) {
-								data.layers[index].active = parsedLayer.active;
-								data.layers[index].opacity = parsedLayer.opacity;
-								data.layers[index].inProject = true;
-							}
-						});
-					}	
-
 				});
-				
-			});	
-			
+			}
+**/
 		}
 					
 		return {
@@ -183,8 +242,7 @@ angular.module('SettingsService', ['APIService'])
 		let data = {
 			//currentProjectID: undefined,
 			currentProject: undefined,
-			projects: undefined,
-			changed: 0
+			projects: undefined
 		}
 		
 		const fetchProjects = function() {
