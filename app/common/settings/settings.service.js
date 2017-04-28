@@ -64,13 +64,14 @@ angular.module('SettingsService', ['APIService'])
 				data.center.lat = project.centerLat;
 				data.center.lon = project.centerLon;
 				data.center.zoom = project.zoom;
-				data.showAll = project.showAll;
+				data.showAll = true; //project.showAll;
+			} else {
+				data.center.lat = APP_CONFIG.initialLat;
+				data.center.lon = APP_CONFIG.initialLon;
+				data.center.zoom = APP_CONFIG.initialZoom;
+				data.showAll = true;
 			}
 			
-			//data.center.lat = APP_CONFIG.initialLat;
-			//data.center.lon = APP_CONFIG.initialLon;
-			//data.center.zoom = APP_CONFIG.initialZoom;
-			data.showAll = true;
 			console.log("calling API for groups");
 			let remoteGroups = LayerGroups.query(function() {
 				console.log("groups call completed");
@@ -103,12 +104,14 @@ angular.module('SettingsService', ['APIService'])
 				let remoteLayers = Layers.query(function() {
 					console.log("layers call completed");
 					remoteLayers.forEach(function(remoteLayer) {
+						console.log("remoteLayer");console.log(remoteLayer);
+						console.log("remoteLayer.initial_opacity = " + remoteLayer.initial_opacity);
 						let layer = {
 							name: remoteLayer.name,
 							group: remoteLayer.layer_group,
 							active: remoteLayer.is_initially_active,
-							opacity: remoteLayer.opacity ? 
-								remoteLayer.opacity : 
+							opacity: remoteLayer.initial_opacity != undefined ? 
+								remoteLayer.initial_opacity : 
 								remoteLayer.layer_group === data.groups[0].name ? 1 : 0.5, //Base maps get full opacity, all others get half
 							layerType: remoteLayer.layer_type,
 							source: {

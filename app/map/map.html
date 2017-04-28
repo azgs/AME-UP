@@ -84,7 +84,14 @@
 							<md-tab-body >
 								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
 									<p class="md-title" ng-if="queryLayer != undefined">Attribute data for {{ queryLayer }}</h3>
-									<p>(Not yet implemented)</p>
+									<!--<div style="font-size:small">{{ queryResults }}</div>-->
+									
+									<div ng-repeat="queryResult in queryResults">
+										<pre>{</pre> <!-- temporary hack. Angular/pre aren't rendering the opening curly brace for some reason-->
+										<pre>
+										{{ queryResult }}
+										</pre>
+									</div>
 
 								</md-content>
 							</md-tab-body>
@@ -96,7 +103,7 @@
 									{{group.name}}
 									<div ng-repeat="layer in layers | filter: {group: group.name, active:true}" style="margin-left:20px; margin-top:10px">
 											<span class="layer-name">{{layer.name}}<span>
-											<div ng-if="layer.source.type === 'ImageWMS'">
+											<div ng-if="layer.source.type === 'ImageWMS' || layer.source.type === 'TileWMS'">
 												<img ng-src="{{layer.source.legend_url}}"/>
 											</div>
 											<div ng-if="layer.source.type === 'TileArcGISRest'">
@@ -140,8 +147,6 @@
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers|filter: { active: true}"></ol-layer>
 					</openlayers>
-					
-					<!--
 					<md-button class="md-primary md-fab md-mini" ng-click="infoClicked()" style="position:absolute; top: 10px; left:90%;">
 						<md-icon ng-if="!infoMode" md-font-icon="fa-info"  class="fa" style="font-size:30px">
 							<md-tooltip md-direction="left" md-autohide="true">
@@ -154,6 +159,6 @@
 							</md-tooltip>							
 						</md-icon>
 					</md-button>
-					-->
+					<div id="positionDisplay" class="ol-scale-line ol-unselectable" style="position:absolute; top: 96.5%; left:90%; visibility:hidden;"></div>
 				</md-content>
 			</div>	
