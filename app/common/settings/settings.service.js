@@ -14,7 +14,7 @@ angular.module('SettingsService', ['APIService'])
 		let groupActiveChange = function(group) {
 			data.layers.forEach(function(layer) {
 				if (layer.group == group.name) {
-					layer.active = group.active;
+					layer.visible = group.active;
 				}
 			});
 		};
@@ -22,7 +22,7 @@ angular.module('SettingsService', ['APIService'])
 		let layerActiveChange = function(layer) {
 			data.groups.forEach(function(group) {
 				if (group.name == layer.group) {
-					group.active = group.active || layer.active;
+					group.active = group.active || layer.visible;
 				}
 			});
 		};
@@ -109,7 +109,7 @@ angular.module('SettingsService', ['APIService'])
 						let layer = {
 							name: remoteLayer.name,
 							group: remoteLayer.layer_group,
-							active: remoteLayer.is_initially_active,
+							visible: remoteLayer.is_initially_active,
 							opacity: remoteLayer.initial_opacity != undefined ? 
 								remoteLayer.initial_opacity : 
 								remoteLayer.layer_group === data.groups[0].name ? 1 : 0.5, //Base maps get full opacity, all others get half
@@ -151,14 +151,14 @@ angular.module('SettingsService', ['APIService'])
 					});
 					
 					if (project) {
-						data.layers.forEach(layer => {layer.active = false;}); //set all to inactive initially
+						data.layers.forEach(layer => {layer.visible = false;}); //set all to inactive initially
 						project.layers.forEach(layer => {
 							let parsedLayer = JSON.parse(JSON.stringify(layer));
 							console.log("parsedLayer.name = " + parsedLayer.name);
 							let index = data.layers.findIndex(element => element.name == parsedLayer.name);
 							console.log("index = " + index + " "); console.log(data.layers[index]);
 							if (index > -1) {
-								data.layers[index].active = parsedLayer.active;
+								data.layers[index].visible = (parsedLayer.visible == undefined) ? parsedLayer.active : parsedLayer.visible;
 								data.layers[index].opacity = parsedLayer.opacity;
 								data.layers[index].inProject = true;
 							}

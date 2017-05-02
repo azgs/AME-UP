@@ -50,7 +50,7 @@
 															<div style="display:table;width:100%;height:10px">
 																<div style="display:table-row">
 																	<div style="display:table-cell;width:10%">
-																		<md-checkbox class="md-checkbox-small"  ng-model="layer.active" ng-change="layerActiveChange(layer)" aria-label={{ layer.name }}>
+																		<md-checkbox class="md-checkbox-small"  ng-model="layer.visible" ng-change="layerActiveChange(layer)" aria-label={{ layer.name }}>
 																		</md-checkbox>
 																	</div>
 																	<div style="display:table-cell;width:70%">
@@ -101,7 +101,7 @@
 								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
 								<div ng-repeat="group in groups | filter: {name: '!Base Maps', active:true}" ol-layer-properties="group">
 									{{group.name}}
-									<div ng-repeat="layer in layers | filter: {group: group.name, active:true}" style="margin-left:20px; margin-top:10px">
+									<div ng-repeat="layer in layers | filter: {group: group.name, visible:true}" style="margin-left:20px; margin-top:10px">
 											<span class="layer-name">{{layer.name}}<span>
 											<div ng-if="layer.source.type === 'ImageWMS' || layer.source.type === 'TileWMS'">
 												<img ng-src="{{layer.source.legend_url}}"/>
@@ -145,7 +145,7 @@
 				<md-content style="width:71%;height:100%">
 					<openlayers  width="71%" height="93%" ol-defaults="defaults" ol-center="center" custom-layers="true" style="position:fixed">
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
-							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers|filter: { active: true}"></ol-layer>
+							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers"></ol-layer>
 					</openlayers>
 					<md-button class="md-primary md-fab md-mini" ng-click="infoClicked()" style="position:absolute; top: 10px; left:90%;">
 						<md-icon ng-if="!infoMode" md-font-icon="fa-info"  class="fa" style="font-size:30px">
