@@ -18,7 +18,8 @@
     "angular-resource": "^1.5.8",
     "font-awesome": "^4.7.0",
     "angular-material-accordion": "^1.0.5",
-    "angular-ui-router": "^0.3.2"
+    "angular-ui-router": "^0.3.2",
+    "modernizr": "^3.5.0"
   },
   "resolutions": {
     "angular": "~1.6.3"

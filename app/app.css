@@ -51,9 +51,10 @@
 	margin-bottom: 10px;
 	padding: 0 0;
 	background-color: #f6f6f6;
-	font-size: 16px;
+	font-size: 14px;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+
 
 .md-button {
 	line-height:0;
@@ -83,7 +84,7 @@ md-input-container.md-opacity {
 	transform: scale(0.85);
 }
 .layer-name {
-	font-size:14px;
+	font-size:12px;
 }
 
 #registration md-input-container {
@@ -96,4 +97,8 @@ md-checkbox#showAllGroups .md-label {
 
 md-checkbox#showAllLayers .md-label {
     margin-left: -115px;
+}
+
+md-checkbox {
+    margin-bottom: 5px;
 }

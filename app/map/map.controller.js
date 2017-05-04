@@ -1,6 +1,6 @@
 angular.module('MapController', ['APIService', 'SettingsService'])
 
-.controller('MapController', function MapController($scope, $http, olData, Layers, LayerGroups, MapSettings, APP_CONFIG, ProjectSettings) {
+.controller('MapController', function MapController($scope, $mdDialog, $http, olData, Layers, LayerGroups, MapSettings, APP_CONFIG, ProjectSettings) {
 	function print_call_stack() {
 		var stack = new Error().stack;
 		console.log("PRINTING CALL STACK");
@@ -15,6 +15,7 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
 		console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
 		**/
+		$scope.boxExtent = undefined;
 		
 		let mousePosition = new ol.control.MousePosition({
 			coordinateFormat: ol.coordinate.createStringXY(2),
@@ -26,6 +27,11 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 
 		map.addControl(mousePosition);
 
+		let scaleLine = new ol.control.ScaleLine({ 
+			units: 'us'
+		});
+		map.addControl(scaleLine);
+		
 		/**
 		//TODO: Get single point select working
 		selectSingleClick = new ol.interaction.Select();
@@ -95,10 +101,11 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 			$scope.selectPoint = undefined;
 			//document.getElementById('positionDisplay').style.visibility = "visible";
 			map.removeLayer(layer);
-			$scope.boxExtent = map.getView().calculateExtent(map.getSize());
-			console.log("extent"); console.log($scope.boxExtent);
-			console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
-			console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
+			//$scope.boxExtent = map.getView().calculateExtent(map.getSize());
+			$scope.boxExtent = undefined;
+			//console.log("extent"); console.log($scope.boxExtent);
+			//console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
+			//console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
 		});		
 
 		dragBox.on('boxdrag', (evt) => {
@@ -136,7 +143,7 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		
 	//scaleline does not work when added via the defaults above. Instead, we must create this object then use it with ol-control in the html
 	$scope.controls = [
-			{ name: 'scaleline', active: true }
+			//{ name: 'scaleline', active: true}
 	]
 	
 	$scope.groupActiveChange = MapSettings.groupActiveChange;
@@ -297,6 +304,50 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 	$scope.queryLayer = undefined;
 	$scope.queryResults = [];
 	$scope.selectedIndex = 0;
+	
+	$scope.reportClicked = function(event, type) {
+		console.log("reportClicked, boxExtent = " + $scope.boxExtent);
+		console.log(event);
+		if ($scope.boxExtent == undefined) {
+			$scope.showAOIalert(event);
+		} else {
+			showReportDialog(event, type);
+		}
+	}
+	
+    $scope.showAOIalert = function(event) {
+ 		console.log("show AOI alert");
+		alert = $mdDialog.alert({
+			title: 'AOI required',
+			textContent: 'Please specify an Area of Interest first.',
+			targetEvent: event,
+			ok: 'Ok'
+		});
+
+		$mdDialog
+			.show( alert )
+			.finally(function() {
+				alert = undefined;
+			});
+    }
+	
+    function showReportDialog(event, type) {
+		//TODO: The alert dialog here is just a stub. This will need to be a custom dialog.
+ 		console.log("show report");
+		alert = $mdDialog.alert({
+			title: type.charAt(0).toUpperCase() + type.slice(1) + ' Report',
+			textContent: '<tabular results here>',
+			targetEvent: event,
+			ok: 'Done'
+		});
+
+		$mdDialog
+			.show( alert )
+			.finally(function() {
+				alert = undefined;
+			});
+	}
+	
 	
 	/**
 	//TODO: This change detection isn't working correctly. Might be worth another look at some point.

@@ -73,7 +73,7 @@
 													</md-accordion-content>
 												</div>
 												</md-accordion-group>
-												<md-divider style="margin-bottom:15px"></md-divider>
+												<md-divider></md-divider>
 											</div>
 										</md-accordion>
 									<!--</form>-->
@@ -119,12 +119,40 @@
 								</md-content>
 							</md-tab-body>
 						</md-tab>
-						<md-tab label="Models">
+						<md-tab label="Reports">
 							<md-tab-body>
-								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
-								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in cursus odio, eget malesuada est. Quisque commodo odio sit amet mauris aliquam, in viverra nisi lobortis. Donec in nisl ullamcorper, tristique arcu sit amet, ornare sem. Nam fermentum, nulla in pellentesque euismod, quam sem aliquam nisi, id auctor eros ex et lacus. Integer semper erat quis sem semper pulvinar. Mauris pellentesque sodales lorem. Donec interdum et magna eget luctus. Nam vestibulum metus ac mi suscipit scelerisque. Pellentesque aliquam gravida leo eu commodo. Pellentesque sed tristique augue. Donec varius blandit dolor, sit amet venenatis nibh laoreet ut. Nunc suscipit magna quis elit ullamcorper tincidunt.</p>
-
-								<p>Vivamus vulputate placerat enim sit amet volutpat. Maecenas eget ultricies ante, ut consequat augue. Nunc lacus elit, viverra et suscipit at, mattis non erat. Morbi lorem arcu, porttitor id mauris sed, semper scelerisque nunc. Nullam luctus urna mi, et vehicula neque scelerisque eu. Aliquam tincidunt leo id leo finibus, varius mattis dui ornare. Duis porttitor sagittis risus, non scelerisque magna ultrices id. Donec scelerisque, neque vitae ullamcorper volutpat, tortor urna placerat felis, sit amet condimentum ante dolor sed neque. Cras rhoncus bibendum est sed suscipit. Donec nec dignissim ex. Nulla at suscipit neque, eget mollis libero. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+								<md-content layout="column" layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
+									<p>First, select an Area of Interest by pulling a bounding box (shift-click-drag) on the map. Then generate reports by clicking on the buttons below.</p>
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Contact')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of management contacts in your Area of Interest.
+										</md-tooltip>
+										Contact
+									</md-button>
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Military Encroachment')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of military encroachment issues in your Area of Interest.
+										</md-tooltip>
+										Military Encroachment
+									</md-button>
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Permitting')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of permits that will be required in your Area of Interest.
+										</md-tooltip>
+										Permitting
+									</md-button>
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Infrastructure')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of infrastructure concerns in your Area of Interest.
+										</md-tooltip>
+										Infrastructure
+									</md-button>
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Environmental')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of environmental concerns in your Area of Interest.
+										</md-tooltip>
+										Environmental
+									</md-button>
 								</md-content>
 							</md-tab-body>
 						</md-tab>
@@ -147,6 +175,7 @@
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers"></ol-layer>
 					</openlayers>
+					<!--
 					<md-button class="md-primary md-fab md-mini" ng-click="infoClicked()" style="position:absolute; top: 10px; left:90%;">
 						<md-icon ng-if="!infoMode" md-font-icon="fa-info"  class="fa" style="font-size:30px">
 							<md-tooltip md-direction="left" md-autohide="true">
@@ -159,6 +188,7 @@
 							</md-tooltip>							
 						</md-icon>
 					</md-button>
+					-->
 					<div id="positionDisplay" class="ol-scale-line ol-unselectable" style="position:absolute; top: 96.5%; left:90%; visibility:hidden;"></div>
 				</md-content>
 			</div>	
