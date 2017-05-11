@@ -36,14 +36,14 @@ var app = angular.module('mapApp', [
   //$locationProvider.html5Mode(true); 
 })
 
-.controller('AuthCatcher', function($scope, $state, Auth, AUTH_EVENTS, $mdSidenav, ProjectSettings, $mdToast) {
+.controller('AuthCatcher', function($scope, $rootScope, $state, Auth, AUTH_EVENTS, $mdSidenav, ProjectSettings, $mdToast) {
 
 	$scope.$on(AUTH_EVENTS.notAuthenticated, function(event) {
 		Auth.logout();
 		$state.go('cover');
 	});
   
-	$scope.toggleSideNav = function() {
+	$rootScope.toggleSideNav = function() {
 		$mdSidenav('main').toggle();
 	}
 	

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('SettingsService', ['APIService'])
-	.factory('MapSettings', function($http, Layers, LayerGroups, APP_CONFIG) {
+	.factory('MapSettings', function($http, $rootScope, Layers, LayerGroups, APP_CONFIG) {
 		console.log("MapSettings init enter");
 		
 		let data = {
@@ -9,6 +9,7 @@ angular.module('SettingsService', ['APIService'])
 			showAll: undefined,
 			groups: undefined,
 			layers: undefined,
+			aoi: undefined //TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
 		}
 		
 		let groupActiveChange = function(group) {
@@ -38,6 +39,11 @@ angular.module('SettingsService', ['APIService'])
 		//const initializeMap = function (/*projectID, projectName,*/ zoom, lon, lat, showAll, groups, layers) {
 		let initializeMap = function (project) {
 			console.log("initializeMap enter");
+			
+			
+            $rootScope.$broadcast('initializingMap', {
+                data: ''
+            });
 
 			if (data.groups) {
 				console.log("resetting groups array");
@@ -64,11 +70,13 @@ angular.module('SettingsService', ['APIService'])
 				data.center.lat = project.centerLat;
 				data.center.lon = project.centerLon;
 				data.center.zoom = project.zoom;
+				data.aoi = project.aoi;
 				data.showAll = true; //project.showAll;
 			} else {
 				data.center.lat = APP_CONFIG.initialLat;
 				data.center.lon = APP_CONFIG.initialLon;
 				data.center.zoom = APP_CONFIG.initialZoom;
+				data.aoi = undefined;
 				data.showAll = true;
 			}
 			
@@ -164,6 +172,11 @@ angular.module('SettingsService', ['APIService'])
 							}
 						});
 					}	
+					
+					console.log("broadcasting mapInitialized");
+					$rootScope.$broadcast('mapInitialized', {
+						data: ''
+					});
 
 				});
 				
@@ -200,7 +213,16 @@ angular.module('SettingsService', ['APIService'])
 			let remoteProjects = Projects.query(function() {
 				//console.log("fetchProjects, remoteProjects:");
 				//console.log(remoteProjects);
+				let aoi;
 				remoteProjects.forEach(function(remoteProject) {
+					//TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
+					if (remoteProject.aoi != undefined) {
+						aoi = new ol.format.GeoJSON().readGeometry(remoteProject.aoi);
+						console.log('aoi = ');
+						console.log(aoi);
+						console.log(aoi.getExtent()); 
+					}
+					
 					let project = {
 						id: remoteProject.id,
 						name: remoteProject.name,
@@ -210,6 +232,8 @@ angular.module('SettingsService', ['APIService'])
 						showAll: remoteProject.show_all,
 						groups: angular.fromJson(remoteProject.groups),
 						layers: angular.fromJson(remoteProject.layers),
+						//aoi: aoi.getExtent(),
+						aoi: aoi,
 						modifiedDate: remoteProject.modified_date
 					}
 					//console.log(project);

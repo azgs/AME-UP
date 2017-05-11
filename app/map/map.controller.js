@@ -10,12 +10,26 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 	olData.getMap().then(map => {
 		
 		/**
+		//Just playing with geometry here
+		let geom = new ol.geom.Polygon.fromExtent([-5, -6, 5, 6]);
+		console.log('geom = ');
+		console.log(geom);
+		let geom_GeoJSON = new ol.format.GeoJSON().writeGeometry(geom);
+		console.log(geom_GeoJSON);
+		let geomx = new ol.format.GeoJSON().readGeometry(geom_GeoJSON);
+		console.log('geomx = ');
+		console.log(geomx);
+		console.log(geomx.getExtent());
+		**/
+		
+		/**
 		$scope.boxExtent = map.getView().calculateExtent(map.getSize());
 		console.log("extent"); console.log($scope.boxExtent);
 		console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
 		console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
 		**/
-		$scope.boxExtent = undefined;
+		//$scope.boxExtent = undefined;
+		$scope.data.aoi = undefined;
 		
 		let mousePosition = new ol.control.MousePosition({
 			coordinateFormat: ol.coordinate.createStringXY(2),
@@ -60,18 +74,12 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		let layer;
 		dragBox.on('boxend', (evt) => {
 			document.getElementById('positionDisplay').style.visibility = "hidden";
-			// Get the current dragbox coordinateds 
-			let coordinates = dragBox.getGeometry().getCoordinates();
-			console.log("coordinates"); console.log(coordinates);
-			$scope.boxExtent = dragBox.getGeometry().getExtent();
-			console.log("extent"); console.log($scope.boxExtent);
-			console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
-			console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
-			// Create the polygon and pass the coordinates
-			let polygonFeature = new ol.Feature(
-							   new ol.geom.Polygon(coordinates));
-
-			// Create the layer and style it as you like
+			//$scope.data.aoi = dragBox.getGeometry().getExtent();
+			$scope.data.aoi = dragBox.getGeometry();
+			console.log("$scope.data.aoi"); console.log($scope.data.aoi);
+			
+			//let polygonFeature = new ol.Feature(new ol.geom.Polygon.fromExtent($scope.data.aoi));
+			let polygonFeature = new ol.Feature($scope.data.aoi);
 			layer = new ol.layer.Vector({
 				source: new ol.source.Vector({
 					features: [polygonFeature]
@@ -86,8 +94,6 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 					})
 				})
 			});
-
-			// Assuming that you have a map instance, add the created layer to the map
 			map.addLayer(layer);
 			
 			if ($scope.infoMode) {
@@ -99,13 +105,8 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		// To remove the layer when you start drawing a new dragbox
 		dragBox.on('boxstart', (evt) => {
 			$scope.selectPoint = undefined;
-			//document.getElementById('positionDisplay').style.visibility = "visible";
 			map.removeLayer(layer);
-			//$scope.boxExtent = map.getView().calculateExtent(map.getSize());
-			$scope.boxExtent = undefined;
-			//console.log("extent"); console.log($scope.boxExtent);
-			//console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
-			//console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
+			$scope.data.aoi = undefined;
 		});		
 
 		dragBox.on('boxdrag', (evt) => {
@@ -113,6 +114,36 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		});		
 		
 		map.addInteraction(dragBox);
+		
+		$scope.$on('initializingMap', function(event, data) {
+			console.log('received initializingMap');
+			map.removeLayer(layer);
+		})
+
+		$scope.$on('mapInitialized', function(event, data) {
+			console.log('received mapInitialized');
+			if ($scope.data.aoi != undefined) {
+				console.log("adding layer");
+				console.log($scope.data.aoi);
+				let polygonFeature = new ol.Feature($scope.data.aoi);
+				layer = new ol.layer.Vector({
+					source: new ol.source.Vector({
+						features: [polygonFeature]
+					}),
+					style: new ol.style.Style({
+						stroke: new ol.style.Stroke({
+							width: 1,
+							color: [0, 0, 0, 1]
+						}),
+						fill: new ol.style.Fill({
+							color: [127, 166, 59, 0.3]
+						})
+					})
+				});
+				map.addLayer(layer);
+			}
+		})
+		
 		
 	});
 					
@@ -306,9 +337,10 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 	$scope.selectedIndex = 0;
 	
 	$scope.reportClicked = function(event, type) {
-		console.log("reportClicked, boxExtent = " + $scope.boxExtent);
+		//console.log("reportClicked, boxExtent = " + $scope.boxExtent);
 		console.log(event);
-		if ($scope.boxExtent == undefined) {
+		//if ($scope.boxExtent == undefined) {
+		if ($scope.data.aoi == undefined) {
 			$scope.showAOIalert(event);
 		} else {
 			showReportDialog(event, type);
