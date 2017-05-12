@@ -11,6 +11,9 @@ var app = angular.module('mapApp', [
   'ui.router',
   'AuthService',
   'ProjectController',
+  'ReportsTabController',
+  'LayersTabController',
+  'AttributesTabController',
   'SettingsService'
 ])
 .config(function($mdThemingProvider) {

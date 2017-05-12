@@ -4,6 +4,7 @@
 				<md-content style="width: 29%;height:100%">
 					<md-tabs md-selected="selectedIndex" layout-fill>
 						<md-tab label="Layers">
+						<div ng-controller="LayersTabController">
 							<md-tab-body>
 								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
 									<!--<form>-->
@@ -78,15 +79,17 @@
 										</md-accordion>
 									<!--</form>-->
 								</md-content>
-							</md-tab-body>								
+							</md-tab-body>		
+						</div>
 						</md-tab>
 						<md-tab ng-if="infoMode" label="Attributes" md-active="true">
+						<div ng-controller="AttributesTabController">
 							<md-tab-body >
 								<md-content layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
-									<p class="md-title" ng-if="queryLayer != undefined">Attribute data for {{ queryLayer }}</h3>
+									<p class="md-title" ng-if="data.queryLayer != undefined">Attribute data for {{ data.queryLayer }}</h3>
 									<!--<div style="font-size:small">{{ queryResults }}</div>-->
 									
-									<div ng-repeat="queryResult in queryResults">
+									<div ng-repeat="queryResult in data.queryResults">
 										<pre>{</pre> <!-- temporary hack. Angular/pre aren't rendering the opening curly brace for some reason-->
 										<pre>
 										{{ queryResult }}
@@ -95,6 +98,7 @@
 
 								</md-content>
 							</md-tab-body>
+						</div>
 						</md-tab>
 						<md-tab label="Legend" >
 							<md-tab-body >
@@ -120,6 +124,7 @@
 							</md-tab-body>
 						</md-tab>
 						<md-tab label="Reports">
+						<div ng-controller="ReportsTabController">
 							<md-tab-body>
 								<md-content layout="column" layout-padding style="background: #f6f6f6;border: 1px solid #e1e1e1;">
 									<p>First, select an Area of Interest by pulling a bounding box (shift-click-drag) on the map. Then generate reports by clicking on the buttons below.</p>
@@ -155,6 +160,7 @@
 									</md-button>
 								</md-content>
 							</md-tab-body>
+						</div>
 						</md-tab>
 						<md-tab label="Results">
 							<md-tab-body >
@@ -175,7 +181,7 @@
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers"></ol-layer>
 					</openlayers>
-					<!--
+					<!-- -->
 					<md-button class="md-primary md-fab md-mini" ng-click="infoClicked()" style="position:absolute; top: 10px; left:90%;">
 						<md-icon ng-if="!infoMode" md-font-icon="fa-info"  class="fa" style="font-size:30px">
 							<md-tooltip md-direction="left" md-autohide="true">
@@ -188,7 +194,7 @@
 							</md-tooltip>							
 						</md-icon>
 					</md-button>
-					-->
+					<!-- -->
 					<div id="positionDisplay" class="ol-scale-line ol-unselectable" style="position:absolute; top: 96.5%; left:90%; visibility:hidden;"></div>
 				</md-content>
 			</div>	

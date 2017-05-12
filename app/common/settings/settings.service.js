@@ -9,7 +9,7 @@ angular.module('SettingsService', ['APIService'])
 			showAll: undefined,
 			groups: undefined,
 			layers: undefined,
-			aoi: undefined //TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
+			aoi: undefined 
 		}
 		
 		let groupActiveChange = function(group) {
@@ -215,7 +215,6 @@ angular.module('SettingsService', ['APIService'])
 				//console.log(remoteProjects);
 				let aoi;
 				remoteProjects.forEach(function(remoteProject) {
-					//TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
 					if (remoteProject.aoi != undefined) {
 						aoi = new ol.format.GeoJSON().readGeometry(remoteProject.aoi);
 						console.log('aoi = ');
@@ -232,7 +231,6 @@ angular.module('SettingsService', ['APIService'])
 						showAll: remoteProject.show_all,
 						groups: angular.fromJson(remoteProject.groups),
 						layers: angular.fromJson(remoteProject.layers),
-						//aoi: aoi.getExtent(),
 						aoi: aoi,
 						modifiedDate: remoteProject.modified_date
 					}
@@ -286,5 +284,17 @@ angular.module('SettingsService', ['APIService'])
 			setCurrentProject: setCurrentProject
 		}
 		
+		
+	})
+	.factory('LayersTabSettings', function() {
+		console.log("LayersTabSettings init enter");
+
+		let data = {
+			queryLayer: undefined,
+			queryResults: []
+		}
+		return {
+			data: data
+		}
 		
 	});

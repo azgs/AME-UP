@@ -1,6 +1,6 @@
 angular.module('MapController', ['APIService', 'SettingsService'])
 
-.controller('MapController', function MapController($scope, $mdDialog, $http, olData, Layers, LayerGroups, MapSettings, APP_CONFIG, ProjectSettings) {
+.controller('MapController', function MapController($scope, $rootScope, $mdDialog, $http, olData, Layers, LayerGroups, MapSettings, APP_CONFIG, ProjectSettings, LayersTabSettings) {
 	function print_call_stack() {
 		var stack = new Error().stack;
 		console.log("PRINTING CALL STACK");
@@ -22,13 +22,6 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		console.log(geomx.getExtent());
 		**/
 		
-		/**
-		$scope.boxExtent = map.getView().calculateExtent(map.getSize());
-		console.log("extent"); console.log($scope.boxExtent);
-		console.log(ol.proj.toLonLat([$scope.boxExtent[0], $scope.boxExtent[1]]));
-		console.log(ol.proj.toLonLat([$scope.boxExtent[2], $scope.boxExtent[3]]));
-		**/
-		//$scope.boxExtent = undefined;
 		$scope.data.aoi = undefined;
 		
 		let mousePosition = new ol.control.MousePosition({
@@ -97,7 +90,8 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 			map.addLayer(layer);
 			
 			if ($scope.infoMode) {
-				$scope.layerClicked($scope.queryLayer);
+				//$scope.layerClicked($scope.queryLayer);
+				$rootScope.$emit('AOIchanged');
 			}
 			
 		});
@@ -176,133 +170,7 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 	$scope.controls = [
 			//{ name: 'scaleline', active: true}
 	]
-	
-	$scope.groupActiveChange = MapSettings.groupActiveChange;
-	$scope.layerActiveChange = MapSettings.layerActiveChange;
-	$scope.toggleShowAllGroups = MapSettings.toggleShowAllGroups;
-	$scope.toggleShowAllLayers = MapSettings.toggleShowAllLayers;
-	
-	//TODO: move all this into layers table and pull from each layer
-	let bogiFeatureParams = {
-		featureNamespace:	'section368',
-		featurePrefix:		'section368',
-		outputFormat:		'application/json',
-		geometryName:		'geom',
-		queryURL:			'http://bogi.evs.anl.gov/geoserver/section368/wfs'
-	}
-	
-	let ameupFeatureParams = {
-		featureNamespace:	'http://ameup.usgin.org',
-		featurePrefix:		'AMEUP',
-		outputFormat:		'application/json',
-		geometryName:		'the_geom',
-		queryURL:			'http://ameup.usgin.org:8080/geoserver/wfs'
-	}
-	
-	//The azgs layers are a bit boogered for now so I'm going to ignore them
-	let azgsFeatureParams = {
-		featureNamespace:	undefined,
-		featurePrefix:		undefined,
-		outputFormat:		undefined,
-		geometryName:		undefined,
-		queryURL:			undefined
-	}
-	
-	let queryFeatures = (layer => {
-		//TODO: parse fields of layer to fill out below.
-		console.log(layer);
-		console.log(layer.source.url);
-		console.log(layer.source.params);
 		
-		
-		let paramStub;
-		if (layer.source.url.toLowerCase().includes("bogi")) {
-			paramStub = bogiFeatureParams;
-		} else if (layer.source.url.toLowerCase().includes("ameup")) {
-			paramStub = ameupFeatureParams;
-		} else if (layer.source.url.toLowerCase().includes("azgs")) {
-			paramStub = azgsFeatureParams;
-		} else {
-			paramStub = {};
-		}
-		
-		let featureType = layer.source.params.LAYERS;
-		if (featureType != undefined) {
-			let split = featureType.split(":");
-			featureType = split.length == 1 ? featureType : split[1];
-		}
-		console.log("featureType = " + featureType);
-
-		/**
-		let filter;
-		if ($scope.selectPoint != undefined) {
-			filter = ol.format.ogc.filter.intersects(paramStub.geometryName, new ol.geom.Point($scope.selectPoint), 'urn:ogc:def:crs:EPSG::3857')
-		} else {
-			filter = ol.format.ogc.filter.bbox(paramStub.geometryName, $scope.boxExtent, 'urn:ogc:def:crs:EPSG::3857')
-		}
-		**/
-		let featureRequest = new ol.format.WFS().writeGetFeature({
-			srsName: 'EPSG:3857',
-			featureNS: paramStub.featureNamespace,
-			featurePrefix: paramStub.featurePrefix,
-			featureTypes: [featureType], 
-			outputFormat: 'application/json',
-			//ogc is not in most of the examples and docs online, but is necessary (https://github.com/openlayers/openlayers/pull/5653)
-			filter: ol.format.ogc.filter.bbox(paramStub.geometryName, $scope.boxExtent, 'urn:ogc:def:crs:EPSG::3857')
-			//filter: filter
-		});
-			
-		//make sure its good to go
-		console.log(featureRequest);
-		featureRequest = featureRequest.hasChildNodes() ? featureRequest : undefined;
-		
-		if (featureRequest != undefined && paramStub.queryURL != undefined) {
-			// then post the request and add the received features to a layer
-			fetch('/proxy/' + paramStub.queryURL, {
-				method: 'POST',
-				body: new XMLSerializer().serializeToString(featureRequest)
-			}).then(function(response) {
-				console.log(response);
-				return response.json();
-				//return response.text();
-			}).then(function(json) {
-				console.log(json);
-				//$scope.queryResults = JSON.stringify(json);
-				
-				//$scope.queryResults[0] = ["No features"];
-				json.features.forEach((feature, index, array) => {
-					$scope.queryResults[index] = JSON.stringify(feature.properties, null, 4);
-					console.log($scope.queryResults[index]);
-				});
-	
-				$scope.$apply();
-	
-				//TODO: see if this works for feature display
-				/**
-				var features = new ol.format.GeoJSON().readFeatures(json);
-				vectorSource.addFeatures(features);
-				map.getView().fit(vectorSource.getExtent());
-				**/
-			});
-		} else {
-			let noData = {noData:"Layer cannot be queried"};
-			$scope.queryResults[0] = JSON.stringify(noData, null, 4);//"Layer cannot be queried";
-		}
-
-	});
-	
-	$scope.layerClicked = function(layerName) {
-		console.log("layer clicked = " + layerName);
-		$scope.queryLayer = layerName;
-		$scope.queryResults = [];
-		let layer = $scope.layers.find(l => {return l.name === layerName;});
-		if (layer != null) {
-			console.log(layer);
-			//Disabling this for now
-			//queryFeatures(layer); 
-		}
-	}
-
 	$scope.infoClicked = function() {
 		console.log("info clicked");
 		if (!$scope.infoMode) {
@@ -315,11 +183,12 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 				});
 			}
 
+			//TODO: Showing first group is kinda dumb I think
 			console.log("groups[0].name = " + $scope.groups[0].name);
 			for (x = 0; x < $scope.layers.length; x++) {
 				console.log("layers.group = " + $scope.layers[x].group);
 				if ($scope.layers[x].group === $scope.groups[1].name) { //assumes first group is always base maps
-					$scope.queryLayer = $scope.layers[x].name;
+					LayersTabSettings.data.queryLayer = $scope.layers[x].name;
 					break;
 				}
 			}
@@ -327,60 +196,13 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 		} else {
 			$scope.infoMode = false;
 			$scope.selectedIndex = 0;
-			$scope.queryLayer = undefined;
+			LayersTabSettings.data.queryLayer = undefined;
 		}
 	}
 	
 	$scope.infoMode = false;
-	$scope.queryLayer = undefined;
-	$scope.queryResults = [];
 	$scope.selectedIndex = 0;
-	
-	$scope.reportClicked = function(event, type) {
-		//console.log("reportClicked, boxExtent = " + $scope.boxExtent);
-		console.log(event);
-		//if ($scope.boxExtent == undefined) {
-		if ($scope.data.aoi == undefined) {
-			$scope.showAOIalert(event);
-		} else {
-			showReportDialog(event, type);
-		}
-	}
-	
-    $scope.showAOIalert = function(event) {
- 		console.log("show AOI alert");
-		alert = $mdDialog.alert({
-			title: 'AOI required',
-			textContent: 'Please specify an Area of Interest first.',
-			targetEvent: event,
-			ok: 'Ok'
-		});
-
-		$mdDialog
-			.show( alert )
-			.finally(function() {
-				alert = undefined;
-			});
-    }
-	
-    function showReportDialog(event, type) {
-		//TODO: The alert dialog here is just a stub. This will need to be a custom dialog.
- 		console.log("show report");
-		alert = $mdDialog.alert({
-			title: type.charAt(0).toUpperCase() + type.slice(1) + ' Report',
-			textContent: '<tabular results here>',
-			targetEvent: event,
-			ok: 'Done'
-		});
-
-		$mdDialog
-			.show( alert )
-			.finally(function() {
-				alert = undefined;
-			});
-	}
-	
-	
+		
 	/**
 	//TODO: This change detection isn't working correctly. Might be worth another look at some point.
 	$scope.$watch(function(){return MapSettings.data;}, 

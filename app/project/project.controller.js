@@ -71,9 +71,9 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 
 		let aoiGeoJSON;
 		if (MapSettings.data.aoi != undefined) {
-			let aoiGeom = new ol.geom.Polygon.fromExtent(MapSettings.data.aoi); //TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
-			console.log('aoiGeom = ');
-			console.log(aoiGeom);
+			//let aoiGeom = new ol.geom.Polygon.fromExtent(MapSettings.data.aoi); //TODO: For now, aoi is saved as a box extent. This will change to a geometry in the future.
+			//console.log('aoiGeom = ');
+			//console.log(aoiGeom);
 			//aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(aoiGeom);
 			aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi);
 			console.log(aoiGeoJSON);
