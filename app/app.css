@@ -102,3 +102,12 @@ md-checkbox#showAllLayers .md-label {
 md-checkbox {
     margin-bottom: 5px;
 }
+
+table.report-table th, td {
+	font-size: small;
+    padding: 5px;
+    text-align: left;
+}
+table.report-table tr:nth-child(even) {
+	background-color: #f2f2f2
+}

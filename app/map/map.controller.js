@@ -73,6 +73,10 @@ angular.module('MapController', ['APIService', 'SettingsService'])
 			
 			//let polygonFeature = new ol.Feature(new ol.geom.Polygon.fromExtent($scope.data.aoi));
 			let polygonFeature = new ol.Feature($scope.data.aoi);
+			//let gml = new ol.format.GML('', '','EPSG::3857');
+			//console.log("BBOX GML = "); console.log(gml.writeFeatures([polygonFeature], {dataProjection: 'EPSG:4326', featureProjection: 'EPSG:4326'}));
+			let geom_GeoJSON = new ol.format.GeoJSON().writeGeometry($scope.data.aoi);
+			console.log("BBOX GeoJSON (Polygon) = "); console.log(geom_GeoJSON);
 			layer = new ol.layer.Vector({
 				source: new ol.source.Vector({
 					features: [polygonFeature]
