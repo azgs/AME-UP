@@ -1,23 +1,32 @@
 <md-dialog aria-label="{{ title }}">
 
-	<md-dialog-content class="md-dialog-content">
-        <h2 class="md-title ng-binding">{{ title }}</h2>
-		<div ng-if="result.noData">{{ result.noData }}</div>
-		<div ng-if="!result.noData">
-			<md-checkbox class="md-checkbox-small right"  style="margin-left:90%;" ng-model="showJson" ng-change="layerActiveChange(layer)" aria-label="showJson">
+	<md-toolbar class="md-dialog-toolbar">
+		<div class="md-toolbar-tools">
+			<h2 class="md-title ng-binding">{{ title }}</h2>
+			<span flex></span>
+			<md-checkbox ng-show="result && !result.noData" class="md-checkbox-small right" ng-model="showJson" ng-change="layerActiveChange(layer)" aria-label="showJson">
 				json
 			</md-checkbox>
-			<div ng-if="showJson">
-				<pre>{{ result | json }}</pre>
+		</div>
+	</md-toolbar>
+	
+	<md-dialog-content  class="md-dialog-content">
+		<md-progress-circular ng-if="!result" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>
+		<div ng-if="result">
+			<div ng-if="result.noData">{{ result.noData }}</div>
+			<div ng-if="!result.noData">
+				<div ng-if="showJson">
+					<pre>{{ result | json }}</pre>
+				</div>
+				<table ng-if="!showJson" class="report-table">
+					<tr>
+						<th ng-repeat="key in keys">{{ key }}</th>
+					</tr>
+					<tr>
+						<td ng-repeat="value in values track by $index">{{ value }}</td>
+					</tr>
+				</table>
 			</div>
-			<table ng-if="!showJson" class="report-table">
-				<tr>
-					<th ng-repeat="key in keys">{{ key }}</th>
-				</tr>
-				<tr>
-					<td ng-repeat="value in values track by $index">{{ value }}</td>
-				</tr>
-			</table>
 		</div>
 
 	</md-dialog-content>

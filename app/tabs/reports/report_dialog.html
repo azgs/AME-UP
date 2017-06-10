@@ -1,8 +1,12 @@
 <md-dialog aria-label="{{ reportName }}">
 
+	<md-toolbar class="md-dialog-toolbar">
+		<div class="md-toolbar-tools">
+			<h2 class="md-title ng-binding">{{ reportName }} Report</h2>
+		</div>
+	</md-toolbar>
+
 	<md-dialog-content class="md-dialog-content">
-        <h2 class="md-title ng-binding">{{ reportName }} Report</h2>
-		<!--{{ results }}-->
 		<span ng-if="!implemented">&lt;{{reportName}} report not yet implemented&gt;</span>
 		<div ng-if="implemented">
 			<md-progress-circular ng-if="!results.$resolved" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>

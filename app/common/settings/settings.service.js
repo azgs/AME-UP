@@ -102,6 +102,7 @@ angular.module('SettingsService', ['APIService'])
 			console.log("calling API for groups");
 			let remoteGroups = LayerGroups.query(function() {
 				console.log("groups call completed");
+				console.log(remoteGroups);
 				remoteGroups.forEach(function(group) {
 					group.active = true;
 					group.showAll = data.showAll;
@@ -111,12 +112,24 @@ angular.module('SettingsService', ['APIService'])
 				console.log("data.groups = ");console.log(data.groups);
 				console.log("data.groups[0].name = " + data.groups[0].name);
 				if (project) {
-					data.groups.forEach(group => {group.active = false;}); //set everything to inactive initially
+					data.groups.forEach(function(group) {group.active = false;}); //set everything to inactive initially
 					console.log("loading project");
-					project.groups.forEach(group => {
+					project.groups.forEach(function(group) {
 						let parsedGroup = JSON.parse(JSON.stringify(group));
 						console.log("parsedGroup.name = " + parsedGroup.name);
-						let index = data.groups.findIndex(element => element.name == parsedGroup.name);
+						//let index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
+						//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
+						let index;
+						if (data.groups.findIndex) {
+							index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
+						} else { //IE
+							for (let x = 0; x < data.groups.length; x++) {
+								if (data.groups[x].name == parsedGroup.name) {
+									index = x;
+									break;
+								}
+							}
+						}
 						console.log("index = " + index + " "); console.log(data.groups[index]);
 						if (index > -1) {
 							data.groups[index].active = parsedGroup.active;
@@ -131,8 +144,8 @@ angular.module('SettingsService', ['APIService'])
 				let remoteLayers = Layers.query(function() {
 					console.log("layers call completed");
 					remoteLayers.forEach(function(remoteLayer) {
-						console.log("remoteLayer");console.log(remoteLayer);
-						console.log("remoteLayer.initial_opacity = " + remoteLayer.initial_opacity);
+						//console.log("remoteLayer");console.log(remoteLayer);
+						//console.log("remoteLayer.initial_opacity = " + remoteLayer.initial_opacity);
 						let layer = {
 							name: remoteLayer.name,
 							group: remoteLayer.layer_group,
@@ -184,11 +197,23 @@ angular.module('SettingsService', ['APIService'])
 					});
 					
 					if (project) {
-						data.layers.forEach(layer => {layer.visible = false;}); //set all to inactive initially
-						project.layers.forEach(layer => {
+						data.layers.forEach(function(layer) {layer.visible = false;}); //set all to inactive initially
+						project.layers.forEach(function(layer) {
 							let parsedLayer = JSON.parse(JSON.stringify(layer));
 							console.log("parsedLayer.name = " + parsedLayer.name);
-							let index = data.layers.findIndex(element => element.name == parsedLayer.name);
+							//let index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+							//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
+							let index;
+							if (data.groups.findIndex) {
+								index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+							} else { //IE
+								for (let x = 0; x < data.layers.length; x++) {
+									if (data.layers[x].name == parsedLayer.name) {
+										index = x;
+										break;
+									}
+								}
+							}
 							console.log("index = " + index + " "); console.log(data.layers[index]);
 							if (index > -1) {
 								data.layers[index].visible = (parsedLayer.visible == undefined) ? parsedLayer.active : parsedLayer.visible;
@@ -242,9 +267,9 @@ angular.module('SettingsService', ['APIService'])
 				remoteProjects.forEach(function(remoteProject) {
 					if (remoteProject.aoi != undefined) {
 						aoi = new ol.format.GeoJSON().readGeometry(remoteProject.aoi);
-						console.log('aoi = ');
-						console.log(aoi);
-						console.log(aoi.getExtent()); 
+						//console.log('aoi = ');
+						//console.log(aoi);
+						//console.log(aoi.getExtent()); 
 					}
 					
 					let project = {
@@ -289,7 +314,6 @@ angular.module('SettingsService', ['APIService'])
 			console.log("getProject id = " + id);
 			const projectID = id ? id : data.currentProject.id;
 			if (projectID) {
-				//data.projects.forEach( project => {
 				for (let x = 0; x < data.projects.length; x++) {
 					const project = data.projects[x];
 					console.log("getProject, project = " + project.name);
