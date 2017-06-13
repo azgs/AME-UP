@@ -7,6 +7,22 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 		console.log( stack );
 	}	
 	
+<<<<<<< Updated upstream
+	//TODO: delete this when not needed
+	let showToast = function(message) {
+		$mdToast.show(
+			$mdToast.simple()
+				.textContent(message)
+				.hideDelay(3000)
+		);
+	};
+		
+	olData.getMap().then(map => {
+		MapSettings.data.theMap = map;
+=======
+<<<<<<< Updated upstream
+	olData.getMap().then(map => {
+=======
 	//TODO: delete this when not needed
 	let showToast = function(message) {
 		$mdToast.show(
@@ -18,6 +34,8 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 		
 	olData.getMap().then(function(map) {
 		MapSettings.data.theMap = map;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 		
 		/**
 		//Just playing with geometry here

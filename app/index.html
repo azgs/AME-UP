@@ -17,6 +17,8 @@
 	<script src="/bower_components/angular-resource/angular-resource.js"></script>
 	<script src="/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
 	
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <script src="/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
     <script src="/bower_components/angular-openlayers-directive/dist/angular-openlayers-directive.js"></script>
 	<script src="app.js"></script>
@@ -30,6 +32,7 @@
 	<script src="common/auth/auth.service.js"></script>
 	<script src="common/api/api.service.js"></script>
 	<script src="common/settings/settings.service.js"></script>
+	<script src="map/maptools/maptools.service.js"></script>
 	<link rel="stylesheet" href="/bower_components/openlayers/ol.css" />
     <link rel="stylesheet" href="/bower_components/angular-material/angular-material.min.css">
 
@@ -39,13 +42,6 @@
 
     <link rel="stylesheet" href="app.css" />
 	
-	<script>
-		const supported = Modernizr.es6collections;
-		if (!supported) {
-			window.location = "not_supported.html";
-		}
-	</script>
-
 </head>
 
 
@@ -59,7 +55,7 @@
 					 <md-icon md-font-icon="fa-bars"  class="fa" style="font-size:25px"></md-icon>
 				</md-button>
 
-				<img src="assets/images/AMEUP-Logo-2_03-64px.png"></img>
+				<img src="assets/images/AMEUP-Logo-2_03-64px.png">
 				
 				<span flex=""></span>
 				<span ng-if="isAuthenticated()"><h2>{{projectData.currentProject.name == undefined ? "(new project)" : projectData.currentProject.name}}</h2></span>
@@ -82,7 +78,7 @@
 				
 	</div>
 	
-	<md-sidenav md-component-id="main" class="md-sidenav-left" style="width: 35%;height="100%">
+	<md-sidenav md-component-id="main" class="md-sidenav-left" style="width:35%; height:100%">
 		<md-toolbar>
 			<div class="md-toolbar-tools">
 				<md-button class="md-icon-button md-no-focus" aria-label="Close Panel" ng-click="toggleSideNav()">

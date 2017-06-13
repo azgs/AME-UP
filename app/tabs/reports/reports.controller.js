@@ -29,7 +29,6 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
     }
 	
     let showReportDialog = function(event, type) {
-		//TODO: The alert dialog here is just a stub. This will need to be a custom dialog.
  		console.log("show report");
 		alert = $mdDialog.alert({
 			title: type.charAt(0).toUpperCase() + type.slice(1) + ' Report',
@@ -48,7 +47,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			if (reportName === 'Contact') {
 				//$scope.results = Reports.get({report: 'contact', filter: '{"type":"Polygon","coordinates":[[[-110.71287778,32.27194444],[-109.19132222,32.27194444],[-109.19132222,33.01055556],[-110.71287778,33.01055556],[-110.71287778,32.27194444]]]}'});
 				$scope.results = Reports.get({report: 'contact', filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
-				$scope.results.$promise.catch(()=>{$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});
+				$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});
 			}
 			
 			$scope.closeDialog = function() {

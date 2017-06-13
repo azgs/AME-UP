@@ -39,7 +39,7 @@ var app = angular.module('mapApp', [
   //$locationProvider.html5Mode(true); 
 })
 
-.controller('AuthCatcher', function($scope, $rootScope, $state, Auth, AUTH_EVENTS, $mdSidenav, ProjectSettings, $mdToast) {
+.controller('AuthCatcher', function($scope, $rootScope, $state, $mdDialog, Auth, AUTH_EVENTS, $mdSidenav, ProjectSettings, $mdToast) {
 
 	$scope.$on(AUTH_EVENTS.notAuthenticated, function(event) {
 		Auth.logout();
@@ -60,6 +60,32 @@ var app = angular.module('mapApp', [
 
 	$scope.projectData = ProjectSettings.data;
 	$scope.authData = Auth.data;
+	
+	let browserCheck = function() {
+		console.log("browserCheck");
+		
+		if (!Auth.isAuthenticated()) {
+			const supported = Modernizr.es6collections;
+			if (!supported) {
+				let alert = $mdDialog.alert({
+					title: "",
+					textContent: "You are using an unsupported browser to access AME-UP. Presentation and performance may be degraded. Please consider using the latest version of Chrome, Firefox, Opera, Safari, or Edge instead.",
+					targetEvent: event,
+					ok: 'OK'
+				});
+				
+				$mdDialog
+					.show( alert )
+					.finally(function() {
+						alert = undefined;
+					});
+			}
+		}
+		
+		
+	}
+	
+	browserCheck();
 })
 
 .run(function ($rootScope, $state, Auth, AUTH_EVENTS) {

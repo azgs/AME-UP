@@ -46,7 +46,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 				parent: angular.element(document.body),
 				targetEvent: ev,
 				templateUrl: 'project/open.project.html',
-				controller: ($scope, $mdDialog) => {
+				controller: function($scope, $mdDialog) {
 					$scope.tmpSelect;
 			
 					$scope.cancel = function() {
@@ -57,7 +57,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 					}
 				}
 			})
-			.then((answer) => {
+			.then(function(answer) {
 				ProjectSettings.setCurrentProject(answer);
 				$scope.showToast('Opening project', true);
 			}, {});
