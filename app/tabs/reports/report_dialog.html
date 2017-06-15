@@ -12,30 +12,34 @@
 			<md-progress-circular ng-if="!results.$resolved" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>
 			<div ng-if="results.$resolved">
 				<span ng-if="error">{{error}}</span>
-				<table ng-if="!error" class="report-table">
-					<tr>
-						<th>First Name</th>
-						<th>Last Name</th>
-						<th>Title</th>
-						<th>Department</th>
-						<th>Agency Name</th>
-						<th>Agency Type</th>
-						<th>Phone</th>
-						<th>Email</th>
-						<th>Address</th>
-					</tr>
-					<tr ng-repeat="contact in results">
-						<td>{{contact.first_name}}</td>
-						<td>{{contact.last_name}}</td>
-						<td>{{contact.position_title}}</td>
-						<td>{{contact.department}}</td>
-						<td>{{contact.agency_name}}</td>
-						<td>{{contact.agency_type}}</td>
-						<td>{{contact.phone}}</td>
-						<td>{{contact.email}}</td>
-						<td>{{contact.street}}, {{contact.city}}, {{contact.state}} {{contact.zip_code}}</td>
-					</tr>
-				</table>
+				<div ng-if="!error">
+					<div ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-bottom:15px;">
+					</div>
+					<table class="report-table">
+						<tr>
+							<th>First Name</th>
+							<th>Last Name</th>
+							<th>Title</th>
+							<th>Department</th>
+							<th>Agency Name</th>
+							<th>Agency Type</th>
+							<th>Phone</th>
+							<th>Email</th>
+							<th>Address</th>
+						</tr>
+						<tr ng-repeat="contact in results.records">
+							<td>{{contact.first_name}}</td>
+							<td>{{contact.last_name}}</td>
+							<td>{{contact.position_title}}</td>
+							<td>{{contact.department}}</td>
+							<td>{{contact.agency_name}}</td>
+							<td>{{contact.agency_type}}</td>
+							<td>{{contact.phone}}</td>
+							<td>{{contact.email}}</td>
+							<td>{{contact.street}}, {{contact.city}}, {{contact.state}} {{contact.zip_code}}</td>
+						</tr>
+					</table>
+				</div>
 			</div>
 		</div>
 	</md-dialog-content>
