@@ -59,7 +59,6 @@ angular.module('SettingsService', ['APIService'])
 		let initializeMap = function (project) {
 			console.log("initializeMap enter");
 			
-			
             $rootScope.$broadcast('initializingMap', {
                 data: ''
             });
@@ -222,7 +221,7 @@ angular.module('SettingsService', ['APIService'])
 							}
 						});
 					}	
-					
+										
 					console.log("broadcasting mapInitialized");
 					$rootScope.$broadcast('mapInitialized', {
 						data: ''
@@ -250,7 +249,6 @@ angular.module('SettingsService', ['APIService'])
 			//currentProjectID: undefined,
 			currentProject: undefined,
 			projects: undefined,
-			changed: 0
 		}
 		
 		const fetchProjects = function() {

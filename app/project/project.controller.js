@@ -1,6 +1,6 @@
-angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMaterial'])
+angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMaterial', 'ChangeMonitorService'])
 
-.controller('ProjectController', function ProjectController($scope, $rootScope, Projects, MapSettings, ProjectSettings, APP_CONFIG, $mdDialog, $mdToast) {
+.controller('ProjectController', function ProjectController($scope, $rootScope, $q, Projects, MapSettings, ProjectSettings, ChangeMonitor, APP_CONFIG, $mdDialog, $mdToast) {
 
 	$scope.projects = ProjectSettings.data.projects;
 	
@@ -28,20 +28,37 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 				.cancel('No');
 	}
 	
+	function verifyChanges(ev, title) {
+		return $q(function(resolve, reject) {
+			if (ChangeMonitor.data.changed) {
+				$mdDialog.show(getChangesDialog(ev, 'New Project')).then(function() {
+					resolve();
+				},
+				function() {
+					reject();
+				});
+			} else {
+				resolve();
+			}
+		});
+	}
+	
 	$scope.newProject = function(ev) {
-		console.log("openProject enter, ProjectSettings.data.changed = " + ProjectSettings.data.changed);
+		console.log("openProject enter, ChangeMonitor.data.changed = " + ChangeMonitor.data.changed);
 		
-		$mdDialog.show(getChangesDialog(ev, 'New Project')).then(function() {
+		verifyChanges(ev, 'New Project').then(function() {
 			ProjectSettings.setCurrentProject(null);
 			$scope.showToast('New project created', true);
 		},
-		function() {});
+		function() {				
+			//$rootScope.toggleSideNav();
+		});
 	}
 	
 	$scope.openProject = function(ev) {
 		console.log("openProject enter");
-		
-			$mdDialog.show(getChangesDialog(ev, 'Open Project')).then(function() {
+					
+		verifyChanges(ev, 'Open Project').then(function() {
 			$mdDialog.show({
 				parent: angular.element(document.body),
 				targetEvent: ev,
@@ -60,10 +77,13 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 			.then(function(answer) {
 				ProjectSettings.setCurrentProject(answer);
 				$scope.showToast('Opening project', true);
-			}, {});
+			}, function() {
+				//$rootScope.toggleSideNav();
+			});
 		},
-		function(){});
-		
+		function() {				
+			//$rootScope.toggleSideNav();
+		});
   };
   	
 	$scope.saveProject = function(ev) {
@@ -122,6 +142,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 					}
 				);
 			}, function() {
+				//$rootScope.toggleSideNav();
 			});
 		} else {
 			project.name = ProjectSettings.data.currentProject.name;
@@ -167,6 +188,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 					}
 				);
 			}, function() {
+				//$rootScope.toggleSideNav();
 			});
 		} else {
 			//TODO:???

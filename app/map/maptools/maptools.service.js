@@ -328,7 +328,9 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			dragBox.on('boxend', function(evt) {
 				console.log("boxend");
 				document.getElementById('positionDisplay').style.visibility = "hidden";
-				MapSettings.data.aoi = dragBox.getGeometry();			
+				
+				MapSettings.data.aoi = dragBox.getGeometry();	
+				$rootScope.$apply();//I have no idea why, but this is necessary to get the watcher to fire. I think it has to do with the fact that aoi is never attached to a scope. 
 				
 				features.push(new ol.Feature(MapSettings.data.aoi));
 				featureOverlay.setMap(MapSettings.data.theMap);	
@@ -398,6 +400,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 		draw.on('drawend', function(evt) {
 			console.log("drawend");
 			MapSettings.data.aoi = evt.feature.getGeometry();
+			$rootScope.$apply();//I have no idea why, but this is necessary to get the watcher to fire. I think it has to do with the fact that aoi is never attached to a scope. 
 		});
 		
 		let addPolyInteraction = function() {
