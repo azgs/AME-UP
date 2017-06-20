@@ -8,6 +8,7 @@ var app = angular.module('mapApp', [
   'ngMaterial',
   'ngResource',
   'ngMaterialAccordion',
+  'ngSanitize',
   'ui.router',
   'AuthService',
   'ProjectController',

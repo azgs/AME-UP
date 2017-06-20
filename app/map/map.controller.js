@@ -87,22 +87,5 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 	$scope.bboxClicked = MapTools.bboxClicked;
 	$scope.polyMode = MapTools.data.polyMode;
 	$scope.polyClicked = MapTools.polyClicked;
-
-
-	/**
-	//TODO: This change detection isn't working correctly. Might be worth another look at some point.
-	$scope.$watch(function(){return MapSettings.data;}, 
-	function(newVal, oldVal){
-		if (newVal == oldVal) {
-			console.log("center changed but initializing");
-		} else {
-			console.log("center change detected");
-			ProjectSettings.data.changed++;
-		}
-	},
-	true);
-	
-	ProjectSettings.data.changed = 0;
-	**/
 	
 });

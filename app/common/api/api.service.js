@@ -68,7 +68,7 @@ angular.module('APIService', ['ngResource'])
 		return $resource(APP_CONFIG.layersAPI + '/reports', {}, {
 			get: {
 				method: 'GET',
-				isArray: true,
+				isArray: false,//true,
 				//The result from the endpoint is an array nested three deep. It is more convenient to the html to flatten this 
 				//and this seems to be the best place to do it.
 				transformResponse: function(data, headers){
@@ -77,8 +77,14 @@ angular.module('APIService', ['ngResource'])
 						return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
 					  }, []);
 					}			
-					let flattened = flatten(angular.fromJson(data));
-					return flattened;
+					//let flattened = flatten(angular.fromJson(data));
+					//return flattened;
+					let result = angular.fromJson(data);
+					let flattened = flatten(result.records);
+					//console.log("flattened = "); console.log(flattened);
+					let returnObj = {textBoxContent: result.textBoxContent, records:flattened};
+					//console.log("returnObj = "); console.log(returnObj);
+					return returnObj
 				}
 			}
 		});
