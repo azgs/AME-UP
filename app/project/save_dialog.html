@@ -1,0 +1,78 @@
+<md-dialog aria-label="{{ title }}">
+
+	<md-toolbar class="md-dialog-toolbar">
+		<div class="md-toolbar-tools">
+			<h2 class="md-title ng-binding">{{ title }}</h2>
+			<span flex></span>
+		</div>
+	</md-toolbar>
+	
+	<md-dialog-content  class="md-dialog-content">
+		<md-progress-circular ng-if="!projectTypes" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>
+		<div ng-show="projectTypes" ng-form="projectTypeForm" layout="column">
+			<md-input-container>
+				<label>Project name</label>
+				<input type="text" name="projectName" ng-model="name" required>
+				<div ng-messages="projectTypeForm.projectName.$error">
+					<div ng-message="required">This is required</div>
+				</div>
+			</md-input-container>
+			<md-input-container>
+				<md-select ng-model="selectedType" name="projectType" placeholder="Select a project type" required>
+					<md-option ng-value="projectType" ng-repeat="projectType in projectTypes">{{ projectType.name }}</md-option>
+				</md-select>
+				<div ng-messages="projectTypeForm.projectType.$error">
+					<div ng-message="required">This is required</div>
+				</div>
+			</md-input-container>	
+			
+			<!--
+			<div ng-show="selectedType" layout="column">
+				<md-input-container ng-repeat="attribute in selectedType.attributes">
+					<label>{{attribute.caption}}</label>
+					<input type="{{attribute.inputType}}" name="inputField{{$index}}" ng-model="attribute.value" required>
+					<div ng-messages="projectTypeForm['inputField' + $index].$error">
+						<div ng-message="required">This is required</div>
+					</div>
+				</md-input-container>
+			</div>
+			-->
+			
+			<div ng-show="selectedType" layout="column">
+				<md-input-container ng-repeat="attribute in selectedType.attributes">
+					<div ng-if="attribute.options">
+						<md-select ng-if="attribute.required" ng-model="attribute.value" name="inputField{{$index}}" placeholder="{{attribute.caption}}" required>
+							<md-option ng-value="attrOption" ng-repeat="attrOption in attribute.options">{{ attrOption }}</md-option>
+						</md-select>
+						<md-select ng-if="!attribute.required" ng-model="attribute.value" name="inputField{{$index}}" placeholder="{{attribute.caption}}">
+							<md-option ng-value="attrOption" ng-repeat="attrOption in attribute.options">{{ attrOption }}</md-option>
+						</md-select>
+						<div ng-messages="projectTypeForm['inputField' + $index].$error">
+							<div ng-message="required">This is required</div>
+						</div>
+					</div>
+					<div ng-if="!attribute.options">
+						<label>{{attribute.caption}}</label>
+						<input ng-if="attribute.required" type="{{attribute.inputType}}" name="inputField{{$index}}" ng-model="attribute.value" ng-pattern="attribute.regex" required>
+						<input ng-if="!attribute.required" type="{{attribute.inputType}}" name="inputField{{$index}}" ng-model="attribute.value" ng-pattern="attribute.regex">
+						<div ng-messages="projectTypeForm['inputField' + $index].$error">
+							<div ng-message="required">This is required</div>
+							<ng-message when="pattern">Wrong format</ng-message>						
+						</div>
+					</div>
+				</md-input-container>
+			</div>
+		</div>
+
+	</md-dialog-content>
+	
+    <md-dialog-actions layout="row">
+      <md-button class="md-primary md-cancel-button md-button md-autofocus md-ink-ripple md-default-theme" ng-click="cancelDialog()">
+        Cancel
+      </md-button>
+      <md-button class="md-primary md-confirm-button md-button md-autofocus md-ink-ripple md-default-theme" ng-click="submitDialog()" ng-disabled="validateForm()">
+        Submit
+      </md-button>
+    </md-dialog-actions>
+	
+</md-dialog>

@@ -1,6 +1,6 @@
-angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMaterial', 'ChangeMonitorService'])
+angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMaterial', 'ChangeMonitorService', 'ngMessages'])
 
-.controller('ProjectController', function ProjectController($scope, $rootScope, $q, Projects, MapSettings, ProjectSettings, ChangeMonitor, APP_CONFIG, $mdDialog, $mdToast) {
+.controller('ProjectController', function ProjectController($scope, $rootScope, $q, Projects, MapSettings, ProjectSettings, ChangeMonitor, ProjectTypes, APP_CONFIG, $mdDialog, $mdToast) {
 
 	$scope.projects = ProjectSettings.data.projects;
 	
@@ -76,6 +76,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 			})
 			.then(function(answer) {
 				ProjectSettings.setCurrentProject(answer);
+				console.log("current project set to "); console.log(ProjectSettings.data.currentProject);
 				$scope.showToast('Opening project', true);
 			}, function() {
 				//$rootScope.toggleSideNav();
@@ -109,32 +110,100 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 			aoi: aoiGeoJSON
 		}
 
-
 		if (ev.currentTarget.id == 'saveAs' || !ProjectSettings.data.currentProject) {
-			const confirm = $mdDialog.prompt()
-				.title('Project Name')
-				.textContent('What would you like to call this project?')
-				.placeholder('Project name')
-				.ariaLabel('Project name')
-				.targetEvent(ev)
-				.ok('Submit')
-				.cancel('Cancel');
+			const confirm = $mdDialog.prompt({
+					title: 'Save Project',
+					locals: {},
+					controller: DialogController,
+					templateUrl: 'project/save_dialog.html',
+					targetEvent: event,
+					ok: 'Submit',
+					cancel: 'Cancel'
+				});
+
+				function DialogController($scope, $mdDialog) {
+					$scope.showJson = false;
+					$scope.title = 'Save Project';
+					$scope.selectedType = null;
+					$scope.name = null;
+					$scope.projectTypes = ProjectTypes.query();
+					
+					$scope.projectTypes.$promise.then(function(data) {
+						console.log("projectTypes = "); 
+						console.log($scope.projectTypes);
+						console.log("projectTypes[0] = "); 
+						console.log($scope.projectTypes[0]); 
+						console.log(data);
+						data.forEach(function(projectType, index) {
+							console.log("projectType = " + projectType.name);
+							console.log("currentProject =");console.log(ProjectSettings.data.currentProject);
+							if (ProjectSettings.data.currentProject && projectType.name === ProjectSettings.data.currentProject.type.name) {
+								console.log("found it");
+								data[index] = ProjectSettings.data.currentProject.type;
+								$scope.selectedType = data[index];//TODO: clone this instead using direct ref to avoid contamination after Cancel
+							}
+							projectType.attributes.forEach(function(attr) {
+								console.log("attr = " + attr.name);
+								console.log("attr.inputType = " + attr.inputType);
+								try {
+									if (attr.inputType.startsWith("[")) {
+										attr.options = JSON.parse(attr.inputType);
+									} else if (attr.inputType.startsWith("regex")) {
+										//attr.regex = attr.inputType.substr(5, attr.inputType.length-5);
+										attr.regex = attr.inputType.substr(5, attr.inputType.length-5);
+										console.log("attr.regex = " + attr.regex);
+									} else if (attr.inputType !== "text" && attr.inputType !== "number") {
+										throw("unknown input type: " + attr.inputType);
+									}
+								} catch(err) {
+									console.log(err);
+									attr.inputType = "text";
+								}
+							});
+						});						
+					}); 
+					
+					$scope.projectTypes.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);}); //TODO: make use of this in html
+
+					$scope.cancelDialog = function() {
+						console.log("canceling");
+						$mdDialog.cancel();
+					}
+					
+					$scope.submitDialog = function() {
+						console.log("submitting, selectedType = "); console.log($scope.selectedType);
+						$mdDialog.hide({name: $scope.name, type: $scope.selectedType});
+					}
+
+					$scope.validateForm = function() {
+						let attributeVacantCount;
+						if ($scope.selectedType) {
+							attributeVacantCount = $scope.selectedType.attributes.reduce(function(acc, attribute) {
+								if (attribute.required && !attribute.value) {
+									++acc;
+								} 
+								return acc;
+							}, 0);
+						}
+						return !$scope.name || !$scope.selectedType || attributeVacantCount > 0
+					}
+				}
 				
-			//TODO: save aoi with project
 			console.log('MapSettings.data.aoi = ');console.log(MapSettings.data.aoi);
 
 			$mdDialog.show(confirm).then(function(result) {
+				console.log("resolved, result = ");console.log(result);
 				//TODO: check preexisting name
-				const name = result;
+				const name = result.name;
 				project.name = name;
+				project.type = result.type;
 				
 				Projects.create(
 					project,
 					function(result) {
 						//ProjectSettings.data.currentProjectID = result.id;
 						project.id = result.id;
-						ProjectSettings.data.currentProject = project;
-						ProjectSettings.fetchProjects();
+						ProjectSettings.setCurrentProject(project.id);
 						$scope.showToast('Project saved', true);
 					},
 					function() {
@@ -146,13 +215,15 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 			});
 		} else {
 			project.name = ProjectSettings.data.currentProject.name;
+			project.type = ProjectSettings.data.currentProject.type;
+			project.id = ProjectSettings.data.currentProject.id;
 			Projects.update(
 				//{projectID: ProjectSettings.data.currentProjectID},
 				{projectID: ProjectSettings.data.currentProject.id},
 				project,
 				function() {
 					$scope.showToast('Project saved', true);
-					ProjectSettings.fetchProjects();
+					ProjectSettings.setCurrentProject(project.id); //technically, id is already set, but calling this forces project/map reload and change detection reset
 				},
 				function() {
 					$scope.showToast('There was a problem. Project not saved.');

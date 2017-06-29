@@ -199,7 +199,7 @@ angular.module('SettingsService', ['APIService'])
 						data.layers.forEach(function(layer) {layer.visible = false;}); //set all to inactive initially
 						project.layers.forEach(function(layer) {
 							let parsedLayer = JSON.parse(JSON.stringify(layer));
-							console.log("parsedLayer.name = " + parsedLayer.name);
+							//console.log("parsedLayer.name = " + parsedLayer.name);
 							//let index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
 							//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
 							let index;
@@ -213,7 +213,7 @@ angular.module('SettingsService', ['APIService'])
 									}
 								}
 							}
-							console.log("index = " + index + " "); console.log(data.layers[index]);
+							//console.log("index = " + index + " "); console.log(data.layers[index]);
 							if (index > -1) {
 								data.layers[index].visible = (parsedLayer.visible == undefined) ? parsedLayer.active : parsedLayer.visible;
 								data.layers[index].opacity = parsedLayer.opacity;
@@ -242,7 +242,7 @@ angular.module('SettingsService', ['APIService'])
 			toggleShowAllLayers: toggleShowAllLayers
 		}
 	})
-	.factory('ProjectSettings', function($http, Projects, MapSettings, APP_CONFIG) {
+	.factory('ProjectSettings', function($http, $q, Projects, MapSettings, APP_CONFIG) {
 		console.log("ProjectSettings init enter");
 
 		let data = {
@@ -253,59 +253,65 @@ angular.module('SettingsService', ['APIService'])
 		
 		const fetchProjects = function() {
 			console.log("fetchProjects, enter");
-			if (data.projects) {
-				data.projects.length = 0;
-			} else {
-				data.projects = [];
-			}
-			let remoteProjects = Projects.query(function() {
-				//console.log("fetchProjects, remoteProjects:");
-				//console.log(remoteProjects);
-				let aoi;
-				remoteProjects.forEach(function(remoteProject) {
-					if (remoteProject.aoi != undefined) {
-						aoi = new ol.format.GeoJSON().readGeometry(remoteProject.aoi);
-						//console.log('aoi = ');
-						//console.log(aoi);
-						//console.log(aoi.getExtent()); 
-					}
-					
-					let project = {
-						id: remoteProject.id,
-						name: remoteProject.name,
-						zoom: remoteProject.zoom_level,
-						centerLon: remoteProject.center_lon,
-						centerLat: remoteProject.center_lat,
-						showAll: remoteProject.show_all,
-						groups: angular.fromJson(remoteProject.groups),
-						layers: angular.fromJson(remoteProject.layers),
-						aoi: aoi,
-						modifiedDate: remoteProject.modified_date
-					}
-					//console.log(project);
-					data.projects.push(project);
+			return $q(function(resolve, reject) {
+				if (data.projects) {
+					data.projects.length = 0;
+				} else {
+					data.projects = [];
+				}
+				let remoteProjects = Projects.query(function() {
+					//console.log("fetchProjects, remoteProjects:");
+					//console.log(remoteProjects);
+					let aoi;
+					remoteProjects.forEach(function(remoteProject) {
+						if (remoteProject.aoi != undefined) {
+							aoi = new ol.format.GeoJSON().readGeometry(remoteProject.aoi);
+							//console.log('aoi = ');
+							//console.log(aoi);
+							//console.log(aoi.getExtent()); 
+						}
+						
+						let project = {
+							id: remoteProject.id,
+							name: remoteProject.name,
+							zoom: remoteProject.zoom_level,
+							centerLon: remoteProject.center_lon,
+							centerLat: remoteProject.center_lat,
+							showAll: remoteProject.show_all,
+							groups: angular.fromJson(remoteProject.groups),
+							layers: angular.fromJson(remoteProject.layers),
+							aoi: aoi,
+							type: angular.fromJson(remoteProject.type),
+							modifiedDate: remoteProject.modified_date
+						}
+						//console.log(project);
+						data.projects.push(project);
+					});
 				});
+				remoteProjects.$promise.then(function() {resolve();});
+				remoteProjects.$promise.catch(function() {reject();});
 			});
-			console.log("fetchProjects, projects:");
-			console.log(data.projects);
 		}
 		
 		fetchProjects();
 		
 		const setCurrentProject = function(id) {
 			console.log("setCurrentProject id = " + id);
-			if (id) {
-				const tmpProject = getProject(id);
-				if (tmpProject){
-					//data.currentProjectID = id;
-					data.currentProject = tmpProject;
-					MapSettings.initializeMap(data.currentProject);
+			fetchProjects().then( function() {
+				console.log("fetchProjects done");
+				if (id) {
+					const tmpProject = getProject(id);
+					if (tmpProject){
+						//data.currentProjectID = id;
+						data.currentProject = tmpProject;
+						MapSettings.initializeMap(data.currentProject);
+					}
+				} else {
+					//data.currentProjectID = null;
+					data.currentProject = null;
+					MapSettings.initializeMap();
 				}
-			} else {
-				//data.currentProjectID = null;
-				data.currentProject = null;
-				MapSettings.initializeMap();
-			}
+			});
 		}
 		
 		const getProject = function(id) {
@@ -327,7 +333,6 @@ angular.module('SettingsService', ['APIService'])
 		
 		return {
 			data: data,
-			fetchProjects: fetchProjects,
 			setCurrentProject: setCurrentProject
 		}
 		
