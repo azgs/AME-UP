@@ -15,7 +15,7 @@
 				<div ng-if="!error">
 					<div ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-bottom:15px;">
 					</div>
-					<table class="report-table">
+					<table class="report-table" ng-show="reportName === 'Contact'">
 						<tr>
 							<th>First Name</th>
 							<th>Last Name</th>
