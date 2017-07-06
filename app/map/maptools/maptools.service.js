@@ -133,6 +133,31 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				}
 				console.log("featureType = " + featureType);
 
+				console.log("zoom level = " + MapSettings.data.theMap.getView().getZoom());
+				let buffer;
+				switch (MapSettings.data.theMap.getView().getZoom()) {
+					case 7: {
+						buffer = 10000;
+						break;
+					}
+					case 8: {
+						buffer = 5000;
+						break;
+					}
+					case 9: {
+						buffer = 1000;
+						break;
+					} 
+					case 10: {
+						buffer = 700;
+						break;
+					}
+					default: {
+						buffer = 500;
+						break;
+					}
+				}
+				 
 				let featureRequest = new ol.format.WFS().writeGetFeature({
 					srsName: 'EPSG:3857',
 					featureNS: layer.source.wfs.feature_namespace, 
@@ -141,6 +166,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 					outputFormat: 'application/json',
 					//Need to add the following filter, but it doesn't exist in the version of OpenLayers (3.16.0) loaded by the bower install of angular-openlayers-directive.
 					//filter: ol.format.ogc.filter.intersects(paramStub.geometryName, new ol.geom.Point(thePoint), 'urn:ogc:def:crs:EPSG::3857')
+					filter: ol.format.ogc.filter.bbox(layer.source.wfs.geometry_name, [thePoint[0]-buffer, thePoint[1]-buffer, thePoint[0]+buffer, thePoint[1]+buffer], 'urn:ogc:def:crs:EPSG::3857')
 				});
 					
 				console.log("featureRequest = ");
@@ -151,6 +177,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 							
 				if (featureRequest != undefined && layer.source.wfs.url != undefined) {
 					let body;
+					/*
 					//TODO: This is a terrible hack. I need to use ol.format.ogc.filter.intersects filter, but it doesn't exist in the version of OpenLayers (3.16.0) loaded by the bower install of angular-openlayers-directive. I could copy the version of openlayers I want (3.18) over the other one in bower_components, but that would break on any new bower install. So, instead, I'm hacking in the needed XML. It's ugly and I hate it but it does what I need. 
 					let queryString = new XMLSerializer().serializeToString(featureRequest);
 					console.log("queryString = ");
@@ -161,6 +188,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 					queryString = queryString.replace("/>", filterString)
 					console.log("queryString =");
 					console.log(queryString);
+					*/
 					
 					// then post the request and add the received features to a layer
 					try {
@@ -168,8 +196,8 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
 						fetch('/proxy/' + layer.source.wfs.url, {
 							method: 'POST',
-							//body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
-							body: queryString
+							body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
+							//body: queryString //For use with the xml hack above
 						}).then(function(response) {
 							console.log(response);
 							return response.json();
