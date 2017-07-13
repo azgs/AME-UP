@@ -48,28 +48,34 @@
 														<!--<div ng-repeat="layer in layers | filter:{group:group.name}" style="margin-left:10px">-->
 														<!--<div ng-repeat="layer in layers | filter: (group.showAll ? {group:group.name} : {group:group.name, active:true}) | orderBy: '-active'" style="margin-left:10px">-->
 														<div ng-repeat="layer in layers | filter: (group.showAll ? {group:group.name} : {group:group.name, active:true})" style="margin-left:10px">
-															<div style="display:table;width:100%;height:10px">
-																<div style="display:table-row">
-																	<div style="display:table-cell;width:10%">
+															<div style="display:flex; flex-direction:row; justify-content:space-between; align-items:baseline">
+																	<div>
 																		<md-checkbox class="md-checkbox-small"  ng-model="layer.visible" ng-change="layerActiveChange(layer)" aria-label="{{ layer.name }}">
 																		</md-checkbox>
 																	</div>
-																	<div style="display:table-cell;width:70%">
+																	<div style="width:70%">
 																		<span ng-if="toolsData.infoMode" ng-class="{'layer-name': layer.name !== layerSettingsData.queryLayer, 'layer-name-selected': layer.name === layerSettingsData.queryLayer}" ng-click="layerClicked(layer.name)" aria-label="{{ layer.name }}">{{ layer.name }}</span>
 																		<span ng-if="!toolsData.infoMode" class="layer-name" aria-label="{{ layer.name }}">{{ layer.name }}</span>
 																	</div>
-																	<div style="display:table-cell;width:20%;">
+																	<div>
 																		<md-input-container class="md-opacity">
-																			<input class="layer-name" style="width:6ch" id="opacity" type="number" min="0" max="1" step="0.01" ng-model="layer.opacity" aria-label="{{ layer.name }} opacity"/>
+																			<input class="layer-name" style="width:7ch" id="opacity" type="number" min="0" max="1" step="0.01" ng-model="layer.opacity" aria-label="{{ layer.name }} opacity"/>
 																			<md-tooltip md-direction="left">
 																				Opacity
 																			</md-tooltip>
 																		</md-input-container>
 																	</div>
-																</div>
-															
-															
+																	<div>
+																		<md-button class="md-primary" style="min-width:1%;text-align:center;" ng-click="layerInfoClicked($event, layer)">
+																			<md-icon md-font-icon="fa-question-circle"  class="fa" style="font-size:15px">
+																				<md-tooltip md-direction="right" md-autohide="true">
+																					{{layer.name}} metadata
+																				</md-tooltip>							
+																			</md-icon>
+																		</md-button>
+																	</div>
 															</div>
+														
 														</div>
 													</md-accordion-content>
 												</div>
@@ -158,7 +164,7 @@
 				<!--</md-sidenav>-->
 				</md-content>
 	
-				<md-content style="width:71%;height:100%">
+				<md-content id="mapContent" style="width:71%;height:100%">
 					<openlayers  width="71%" height="93%" ol-defaults="defaults" ol-center="center" custom-layers="true" style="position:fixed">
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers"></ol-layer>
