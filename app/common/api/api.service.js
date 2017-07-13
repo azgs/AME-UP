@@ -116,4 +116,19 @@ angular.module('APIService', ['ngResource'])
 			}
 			
 		});
+	})
+	.factory('ProjectTypes', function($resource, APP_CONFIG) {
+		return $resource(APP_CONFIG.layersAPI + '/project_types', {}, {
+			query: {
+				method: 'GET',
+				isArray: true,
+				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+			},
+			/**
+			get: {
+				method: 'GET',
+				isArray: false,
+			}
+			**/			
+		});
 	});
