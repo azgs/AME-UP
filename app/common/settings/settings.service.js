@@ -165,8 +165,7 @@ angular.module('SettingsService', ['APIService'])
 									feature_prefix: remoteLayer.feature_prefix,
 									geometry_name: remoteLayer.geometry_name,
 									url: remoteLayer.wfs_url
-								},
-								metadata: remoteLayer.metadata,
+								}
 							}
 						};
 						
