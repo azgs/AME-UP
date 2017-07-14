@@ -1,0 +1,19 @@
+<md-dialog aria-label="{{ layer.name }}">
+
+	<md-toolbar class="md-dialog-toolbar">
+		<div class="md-toolbar-tools">
+			<h2 class="md-title ng-binding">{{ title }} Metadata</h2>
+		</div>
+	</md-toolbar>
+
+	<md-dialog-content class="md-dialog-content">
+		<div ng-bind-html="content" class="md-body-1" style="padding-bottom:15px;"></div>
+	</md-dialog-content>
+	
+    <md-dialog-actions layout="row">
+      <md-button class="md-primary md-confirm-button md-button md-autofocus md-ink-ripple md-default-theme" ng-click="closeDialog()">
+        Done
+      </md-button>
+    </md-dialog-actions>
+	
+</md-dialog>
