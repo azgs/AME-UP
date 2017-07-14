@@ -37,6 +37,27 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				})
 			})
 		});
+
+		//TODO: Had to abandon use of ol.Collection because it has performance issues on clear(). This is probably a better way to go anyhow. But, it conflicts with my use of features in the bbox and poly tools. For now, I'm fixing the obvious problem. Look into making this consistent throughout.
+		let features2 = new ol.source.Vector();
+		let featureOverlay2 = new ol.layer.Vector({
+			source: features2,
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+					color: '#ffcc33',
+					width: 2
+				}),
+				image: new ol.style.Circle({
+					radius: 7,
+					fill: new ol.style.Fill({
+						color: '#ffcc33'
+					})
+				})
+			})
+		});
 		
 		let markers = new ol.Collection();
 		let markersOverlay = new ol.layer.Vector({
@@ -117,7 +138,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			});
 			MapSettings.data.theMap.addInteraction(selectSingleClick);
 			***/
-			featureOverlay.setMap(MapSettings.data.theMap);
+			featureOverlay2.setMap(MapSettings.data.theMap);
 			markersOverlay.setMap(MapSettings.data.theMap);
 			MapSettings.data.theMap.on('singleclick', infoEventHandler);
 		}
@@ -129,8 +150,8 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				console.log("clearInfoInteraction, no map");
 				return;
 			}
-			features.clear();
-			featureOverlay.setMap(null);
+			features2.clear();
+			featureOverlay2.setMap(null);
 			markers.clear();
 			markersOverlay.setMap(null);
 			MapSettings.data.theMap.un('singleclick', infoEventHandler);		
@@ -142,7 +163,9 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				if (layer.name === layerName) {
 					layer.visible = true;
 					LayersTabSettings.data.queryLayer = layerName;
-					showInfoDialog(layer, markers.item(0).getGeometry().getFirstCoordinate());
+					if (markers.getLength() > 0) {
+						showInfoDialog(layer, markers.item(0).getGeometry().getFirstCoordinate());
+					}
 				}
 			});
 		}		
@@ -289,7 +312,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						}).then(function(result) {
 							console.log(result);
 				
-							features.clear();
+							features2.clear();
 							let feature;
 							try {
 								feature = new ol.format.GeoJSON().readFeatures(result)[0];
@@ -297,7 +320,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 								console.log(err);
 							}
 							if (feature !== undefined) {
-								features.push(feature);
+								features2.addFeature(feature);
 								body = result.features[0].properties;
 							} else {
 								body = {noData: "There is no feature in that location"};
@@ -313,7 +336,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						request.onload = function() {
 							let result = JSON.parse(this.responseText);
 							console.log(result);
-							features.clear();
+							features2.clear();
 							let feature;
 							try {
 								feature = new ol.format.GeoJSON().readFeatures(result)[0];
@@ -321,7 +344,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 								console.log(err);
 							}
 							if (feature !== undefined) {
-								features.push(feature);
+								features2.addFeature(feature);
 								body = result.features[0].properties;
 							} else {
 								body = {noData: "There is no feature in that location"};
@@ -335,7 +358,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 							
 						};
 						request.open('POST', '/proxy/' + layer.source.wfs.url, true);
-						request.send(queryString);
+						request.send(new XMLSerializer().serializeToString(featureRequest));
 					}
 
 				} else {
