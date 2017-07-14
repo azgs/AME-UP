@@ -37,48 +37,6 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				})
 			})
 		});
-
-		//TODO: Had to abandon use of ol.Collection because it has performance issues on clear(). This is probably a better way to go anyhow. But, it conflicts with my use of features in the bbox and poly tools. For now, I'm fixing the obvious problem. Look into making this consistent throughout.
-		let features2 = new ol.source.Vector();
-		let featureOverlay2 = new ol.layer.Vector({
-			source: features2,
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(255, 255, 255, 0.2)'
-				}),
-				stroke: new ol.style.Stroke({
-					color: '#ffcc33',
-					width: 2
-				}),
-				image: new ol.style.Circle({
-					radius: 7,
-					fill: new ol.style.Fill({
-						color: '#ffcc33'
-					})
-				})
-			})
-		});
-		
-		let markers = new ol.Collection();
-		let markersOverlay = new ol.layer.Vector({
-			source: new ol.source.Vector({features: markers}),
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(255, 255, 255, 0.2)'
-				}),
-				stroke: new ol.style.Stroke({
-					color: '#ffcc33',
-					width: 2
-				}),
-				image: new ol.style.Circle({
-					radius: 7,
-					fill: new ol.style.Fill({
-						color: '#ff0000'//'#ffcc33'
-					})
-				})
-			})
-		});
-		
 		
 		let infoClicked = function() {
 			console.log("info clicked");
@@ -99,12 +57,10 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			console.log(event);
 			let selectPoint = event.coordinate;
 			console.log("selectPoint = "); console.log(selectPoint);
-			markers.clear();
-			markers.push(new ol.Feature({geometry: new ol.geom.Point(selectPoint)}));
 			if (data.infoMode) {
 				//let layer = MapSettings.data.layers.find(l => {return l.name === LayersTabSettings.data.queryLayer;});
 				//Yes, I am being obstinate in including this use of find when the old stuff will work in all browsers. That's me: obstinate.
-				let layer;
+				let layer = null;
 				if (MapSettings.data.layers.find) {
 					layer = MapSettings.data.layers.find(function(l) {return l.name === LayersTabSettings.data.queryLayer;});
 				} else { //IE
@@ -115,7 +71,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						}
 					}
 				}
-				showInfoDialog(layer, selectPoint, event.originalEvent);
+				showInfoDialog(layer,selectPoint, event.originalEvent);
 			}				
 		}		
 		
@@ -138,8 +94,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			});
 			MapSettings.data.theMap.addInteraction(selectSingleClick);
 			***/
-			featureOverlay2.setMap(MapSettings.data.theMap);
-			markersOverlay.setMap(MapSettings.data.theMap);
+			featureOverlay.setMap(MapSettings.data.theMap);
 			MapSettings.data.theMap.on('singleclick', infoEventHandler);
 		}
 		
@@ -150,87 +105,24 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				console.log("clearInfoInteraction, no map");
 				return;
 			}
-			features2.clear();
-			featureOverlay2.setMap(null);
-			markers.clear();
-			markersOverlay.setMap(null);
+			features.clear();
+			featureOverlay.setMap(null);
 			MapSettings.data.theMap.un('singleclick', infoEventHandler);		
 		}
 		
+		
 		let layerClicked = function(layerName) {
 			console.log("layer clicked = " + layerName);
+			//only make selected layer if it is visible
 			MapSettings.data.layers.some(function(layer) {
 				if (layer.name === layerName) {
-					layer.visible = true;
-					LayersTabSettings.data.queryLayer = layerName;
-					if (markers.getLength() > 0) {
-						showInfoDialog(layer, markers.item(0).getGeometry().getFirstCoordinate());
+					if (layer.visible) {
+						LayersTabSettings.data.queryLayer = layerName;
 					}
 				}
 			});
 		}		
 		
-		let showInfoDialog = function(layer, selectPoint, event) {
-			console.log("show info dialog");
-			
-			let parent = angular.element(document.querySelector('#mapContent'));
-			console.log("parent");console.log(parent);
-			
-			let alert;
-			if (layer == null) {
-				alert = $mdDialog.alert({
-					parent: parent,
-					title: "",
-					textContent: "Select layers to query by clicking the layer name in the Layers tab. Results will appear here. You do not need to close this dialog to select layers.",
-					targetEvent: event,
-					ok: 'OK'
-				});
-			} else {
-				alert = $mdDialog.alert({
-					parent: parent,
-					title: layer.name,
-					locals: { layer: layer, thePoint: selectPoint },
-					controller: DialogController,
-					templateUrl: 'map/maptools/results_dialog.html',
-					targetEvent: event,
-					ok: 'Done'
-				});
-
-				function DialogController($scope, $mdDialog, layer, thePoint) {
-					console.log("dialog enter");
-					$scope.showJson = false;
-					$scope.title = layer.name;
-					let query = queryFeatures(layer, thePoint).then(function(result) {
-						console.log("result =");console.log(result);
-						let values;
-						//Yes, I am being obstinate in including this use of Object.values when the old stuff will work in all browsers. That's me: obstinate.
-						if (Object.values) {
-							values = Object.values(result);
-						} else { //IE
-							values = [];
-							Object.keys(result).forEach(function(key) {values.push(result[key])});
-						}
-						console.log("values = "); console.log(values);
-						$scope.values = values;
-						$scope.keys = Object.keys(result);
-						$scope.result = result;
-					});
-					
-					$scope.closeDialog = function() {
-						$mdDialog.hide();
-					}
-				}
-			}
-
-			$mdDialog
-				.show( alert )
-				.catch(function() {}) //swallows reject error when we programmatically open new dialog over old
-				.finally(function() {
-					alert = undefined;
-				});
-			
-		}
-					
 		let queryFeatures = (function(layer, thePoint) {
 			return $q(function(resolve, reject) {	
 			
@@ -312,7 +204,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						}).then(function(result) {
 							console.log(result);
 				
-							features2.clear();
+							features.clear();
 							let feature;
 							try {
 								feature = new ol.format.GeoJSON().readFeatures(result)[0];
@@ -320,7 +212,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 								console.log(err);
 							}
 							if (feature !== undefined) {
-								features2.addFeature(feature);
+								features.push(feature);
 								body = result.features[0].properties;
 							} else {
 								body = {noData: "There is no feature in that location"};
@@ -336,7 +228,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 						request.onload = function() {
 							let result = JSON.parse(this.responseText);
 							console.log(result);
-							features2.clear();
+							features.clear();
 							let feature;
 							try {
 								feature = new ol.format.GeoJSON().readFeatures(result)[0];
@@ -344,7 +236,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 								console.log(err);
 							}
 							if (feature !== undefined) {
-								features2.addFeature(feature);
+								features.push(feature);
 								body = result.features[0].properties;
 							} else {
 								body = {noData: "There is no feature in that location"};
@@ -358,7 +250,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 							
 						};
 						request.open('POST', '/proxy/' + layer.source.wfs.url, true);
-						request.send(new XMLSerializer().serializeToString(featureRequest));
+						request.send(queryString);
 					}
 
 				} else {
@@ -369,6 +261,62 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				
 			});
 		});
+	
+		let showInfoDialog = function(layer, selectPoint, event) {
+			console.log("show info dialog");
+			let alert;
+			
+			if (layer == null) {
+				alert = $mdDialog.alert({
+					title: "",
+					textContent: "Please select a layer to query (click layer name in the Layers tab).",
+					targetEvent: event,
+					ok: 'OK'
+				});
+			} else {
+				alert = $mdDialog.alert({
+					title: layer.name,
+					locals: { layer: layer, thePoint: selectPoint },
+					controller: DialogController,
+					templateUrl: 'map/maptools/results_dialog.html',
+					targetEvent: event,
+					ok: 'Done'
+				});
+
+				function DialogController($scope, $mdDialog, layer, thePoint) {
+					$scope.showJson = false;
+					$scope.title = layer.name;
+					let query = queryFeatures(layer, thePoint).then(function(result) {
+						console.log("result =");console.log(result);
+						let values;
+						//Yes, I am being obstinate in including this use of Object.values when the old stuff will work in all browsers. That's me: obstinate.
+						if (Object.values) {
+							values = Object.values(result);
+						} else { //IE
+							values = [];
+							Object.keys(result).forEach(function(key) {values.push(result[key])});
+						}
+						console.log("values = "); console.log(values);
+						$scope.values = values;
+						$scope.keys = Object.keys(result);
+						$scope.result = result;
+					});
+					
+					$scope.closeDialog = function() {
+						$mdDialog.hide();
+					}
+				}
+			}
+
+			$mdDialog
+				.show( alert )
+				.finally(function() {
+					alert = undefined;
+				});
+			
+			
+			
+		}
 
 		
 		let bboxClicked = function() {
