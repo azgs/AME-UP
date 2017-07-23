@@ -18,6 +18,10 @@
 	<script src="/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
 	<script src="/bower_components/angular-sanitize/angular-sanitize.min.js"></script>	
 	<script src="/bower_components/angular-messages/angular-messages.js"></script>
+	<script src="/bower_components/html2canvas/build/html2canvas.min.js"></script>
+	<script src="/bower_components/pdfmake/build/pdfmake.min.js"></script>
+	<script src='/bower_components/pdfmake/build/vfs_fonts.js'></script>
+	<script src='/bower_components/angular-file-saver/dist/angular-file-saver.bundle.min.js'></script>
 	
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -58,7 +62,7 @@
 					 <md-icon md-font-icon="fa-bars"  class="fa" style="font-size:25px"></md-icon>
 				</md-button>
 
-				<img src="assets/images/AMEUP-Logo-2_03-64px.png">
+				<a ui-sref="cover"><img src="assets/images/AMEUP-Logo-2_03-64px.png"></a>
 				
 				<span flex=""></span>
 				<span ng-if="isAuthenticated()"><h2>{{projectData.currentProject.name == undefined ? "(new project)" : projectData.currentProject.name}}</h2></span>
@@ -115,6 +119,14 @@
 				 Delete project
 			</md-button><br/>
 		</md-content>
+		<md-divider></md-divider>
+		<md-content>
+			<md-button class="md-primary"  ng-click="help($event)">
+				 <md-icon md-font-icon="fa-question-circle-o"  class="fa" style="font-size:25px"></md-icon>
+				 Help
+			</md-button><br/>
+		</md-content>
+		
 	</md-sidenav>
 
 </body>

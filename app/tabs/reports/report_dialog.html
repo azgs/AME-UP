@@ -3,6 +3,36 @@
 	<md-toolbar class="md-dialog-toolbar">
 		<div class="md-toolbar-tools">
 			<h2 class="md-title ng-binding">{{ reportName }} Report</h2>
+			<span flex></span>
+			<md-menu ng-if="results.$resolved" md-position-mode="target-right target" md-offset="0 40">
+				<md-button ng-click="$mdOpenMenu($event)" class="md-primary md-raised md-small"  aria-label="Download" >
+					<md-icon md-menu-origin="" md-font-icon="fa-arrow-down"  class="fa">
+						<md-tooltip md-direction="left" md-autohide="true">
+							Download
+						</md-tooltip>
+					</md-icon>
+				</md-button>
+				<md-menu-content>
+					<md-menu-item>
+						<md-button ng-click="csvDownloadClicked()">
+							<md-tooltip md-direction="right" md-autohide="true">
+								Download as csv file
+							</md-tooltip>
+							csv
+						</md-button></md-menu-item>
+					<md-divider></md-divider>
+					<md-menu-item>
+						<md-button ng-click="pdfDownloadClicked()">
+							<md-tooltip md-direction="right" md-autohide="true">
+								Download as pdf file
+							</md-tooltip>
+							pdf
+						</md-button>
+					</md-menu-item>
+				</md-menu-content>
+			</md-menu>
+
+
 		</div>
 	</md-toolbar>
 
@@ -10,10 +40,10 @@
 		<span ng-if="!implemented">&lt;{{reportName}} report not yet implemented&gt;</span>
 		<div ng-if="implemented">
 			<md-progress-circular ng-if="!results.$resolved" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>
-			<div ng-if="results.$resolved">
+			<div ng-if="results.$resolved" id="reportBody">
 				<span ng-if="error">{{error}}</span>
 				<div ng-if="!error">
-					<div ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-bottom:15px;">
+					<div id="introText" ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-bottom:15px;">
 					</div>
 					<table class="report-table" ng-show="reportName === 'Contact'">
 						<tr>

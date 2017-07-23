@@ -4,8 +4,8 @@
 		<div class="md-toolbar-tools">
 			<h2 class="md-title ng-binding">{{ title }}</h2>
 			<span flex></span>
-			<md-checkbox ng-show="result && !result.noData" class="md-checkbox-small right" ng-model="showJson" ng-change="layerActiveChange(layer)" aria-label="showJson">
-				json
+			<md-checkbox ng-show="result && !result.noData" class="md-checkbox-small right" ng-model="alternateLayout" ng-change="layerActiveChange(layer)" aria-label="alternateLayout">
+				horizontal
 			</md-checkbox>
 		</div>
 	</md-toolbar>
@@ -15,10 +15,13 @@
 		<div ng-if="result">
 			<div ng-if="result.noData">{{ result.noData }}</div>
 			<div ng-if="!result.noData">
-				<div ng-if="showJson">
-					<pre>{{ result | json }}</pre>
-				</div>
-				<table ng-if="!showJson" class="report-table">
+				<table ng-if="!alternateLayout" class="report-table">
+					<tr ng-repeat="key in keys">
+						<td><b>{{ key }}</b></td>
+						<td>{{result[key]}}</td>
+					</tr>
+				<table>
+				<table ng-if="alternateLayout" class="report-table">
 					<tr>
 						<th ng-repeat="key in keys">{{ key }}</th>
 					</tr>

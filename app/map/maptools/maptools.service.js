@@ -79,6 +79,10 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			})
 		});
 		
+		$rootScope.$on('queryLayerHidden', function(event, data) {
+			console.log('received queryLayerHidden');
+			features2.clear();
+		});
 		
 		let infoClicked = function() {
 			console.log("info clicked");
@@ -162,6 +166,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			MapSettings.data.layers.some(function(layer) {
 				if (layer.name === layerName) {
 					layer.visible = true;
+					MapSettings.layerActiveChange(layer);
 					LayersTabSettings.data.queryLayer = layerName;
 					if (markers.getLength() > 0) {
 						showInfoDialog(layer, markers.item(0).getGeometry().getFirstCoordinate());
@@ -198,7 +203,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 
 				function DialogController($scope, $mdDialog, layer, thePoint) {
 					console.log("dialog enter");
-					$scope.showJson = false;
+					$scope.alternateLayout = false;
 					$scope.title = layer.name;
 					let query = queryFeatures(layer, thePoint).then(function(result) {
 						console.log("result =");console.log(result);
@@ -397,6 +402,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 		let addBboxInteraction = function() {
 			console.log("add bbox interaction");
 			if (MapSettings.data.theMap === undefined) {
+				console.log("no map!");
 				return;
 			}
 
@@ -512,6 +518,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 
 		$rootScope.$on('initializingMap', function(event, data) {
 			console.log('received initializingMap');
+			clearInfoInteraction();
 			clearBboxInteraction();
 			clearPolyInteraction();
 		})
