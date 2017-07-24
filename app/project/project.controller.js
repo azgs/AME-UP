@@ -31,7 +31,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 	function verifyChanges(ev, title) {
 		return $q(function(resolve, reject) {
 			if (ChangeMonitor.data.changed) {
-				$mdDialog.show(getChangesDialog(ev, 'New Project')).then(function() {
+				$mdDialog.show(getChangesDialog(ev, title)).then(function() {
 					resolve();
 				},
 				function() {
@@ -44,7 +44,7 @@ angular.module('ProjectController', ['APIService', 'SettingsService', 'ngMateria
 	}
 	
 	$scope.newProject = function(ev) {
-		console.log("openProject enter, ChangeMonitor.data.changed = " + ChangeMonitor.data.changed);
+		console.log("newProject enter, ChangeMonitor.data.changed = " + ChangeMonitor.data.changed);
 		
 		verifyChanges(ev, 'New Project').then(function() {
 			ProjectSettings.setCurrentProject(null);

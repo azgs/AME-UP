@@ -16,22 +16,38 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 		);
 	};
 		
+	//TODO: seems like we might have to do this to make sure map handle is reset after navigation. Look at this more closely and make sure.
+	/**
+	$rootScope.$on('mapInitialized', function(event, data) {
+		console.log('received mapInitialized');
+		olData.getMap().then(function(map) {
+			console.log("setting map 2");
+			MapSettings.data.theMap = map;
+			$scope.data.aoi = undefined;
+			
+			let mousePosition = new ol.control.MousePosition({
+				coordinateFormat: ol.coordinate.createStringXY(2),
+				projection: 'EPSG:4326',
+				className: 'ol-scale-line-inner',
+				target: document.getElementById('positionDisplay'),
+				undefinedHTML: '&nbsp;'
+			});
+
+			map.addControl(mousePosition);
+
+			let scaleLine = new ol.control.ScaleLine({ 
+				units: 'us'
+			});
+			map.addControl(scaleLine);				
+		});
+	});
+	**/
+		
+	/*	
 	olData.getMap().then(function(map) {
+		console.log("setting map");
 		MapSettings.data.theMap = map;
-		
-		/**
-		//Just playing with geometry here
-		let geom = new ol.geom.Polygon.fromExtent([-5, -6, 5, 6]);
-		console.log('geom = ');
-		console.log(geom);
-		let geom_GeoJSON = new ol.format.GeoJSON().writeGeometry(geom);
-		console.log(geom_GeoJSON);
-		let geomx = new ol.format.GeoJSON().readGeometry(geom_GeoJSON);
-		console.log('geomx = ');
-		console.log(geomx);
-		console.log(geomx.getExtent());
-		**/
-		
+				
 		$scope.data.aoi = undefined;
 		
 		let mousePosition = new ol.control.MousePosition({
@@ -49,8 +65,32 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 		});
 		map.addControl(scaleLine);				
 	});
+	*/
 					
-	MapSettings.initializeMap();
+	//MapSettings.initializeMap();
+	MapSettings.initializeMap()
+	.then(function() {
+		olData.getMap().then(function(map) {
+			console.log("setting map 2");
+			MapSettings.data.theMap = map;
+			$scope.data.aoi = undefined;
+			
+			let mousePosition = new ol.control.MousePosition({
+				coordinateFormat: ol.coordinate.createStringXY(2),
+				projection: 'EPSG:4326',
+				className: 'ol-scale-line-inner',
+				target: document.getElementById('positionDisplay'),
+				undefinedHTML: '&nbsp;'
+			});
+
+			map.addControl(mousePosition);
+
+			let scaleLine = new ol.control.ScaleLine({ 
+				units: 'us'
+			});
+			map.addControl(scaleLine);				
+		});
+	});
 
 	$scope.center = MapSettings.data.center;
 	$scope.groups = MapSettings.data.groups;

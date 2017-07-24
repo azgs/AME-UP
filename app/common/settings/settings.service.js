@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('SettingsService', ['APIService'])
-	.factory('MapSettings', function($http, $rootScope, Layers, LayerGroups, LayersTabSettings, APP_CONFIG) {
+	.factory('MapSettings', function($http, $rootScope, $q, Layers, LayerGroups, LayersTabSettings, APP_CONFIG) {
 		console.log("MapSettings init enter");
 		
 		let data = {
@@ -17,6 +17,7 @@ angular.module('SettingsService', ['APIService'])
 			data.layers.forEach(function(layer) {
 				if (layer.group == group.name) {
 					layer.visible = group.active;
+					checkQueryLayer(layer);
 				}
 			});
 		};
@@ -28,11 +29,18 @@ angular.module('SettingsService', ['APIService'])
 				}
 			});
 			
+			checkQueryLayer(layer);
+		};
+		
+		let checkQueryLayer = function(layer) {
 			//If layer is not active and it is the selected layer for queries, make it not be
 			if (!layer.visible && layer.name === LayersTabSettings.data.queryLayer) {
 				LayersTabSettings.data.queryLayer = undefined;
+				$rootScope.$broadcast('queryLayerHidden', {
+					data: ''
+				});
 			}
-		};
+		}
 
 		let toggleShowAllGroups = function() {
 			data.showAll = !data.showAll;
@@ -55,181 +63,182 @@ angular.module('SettingsService', ['APIService'])
 		}
 		***/
 		
-		//const initializeMap = function (/*projectID, projectName,*/ zoom, lon, lat, showAll, groups, layers) {
 		let initializeMap = function (project) {
-			console.log("initializeMap enter");
-			
-            $rootScope.$broadcast('initializingMap', {
-                data: ''
-            });
+			return $q(function(resolve, reject) {
+				console.log("MapSettings initializeMap enter");
 
-			if (data.groups) {
-				console.log("resetting groups array");
-				data.groups.length = 0;
-			} else {
-				console.log("creating new groups array");
-				data.groups = [];
-			}
-
-			if (data.layers) {
-				console.log("resetting layers array");
-				data.layers.length = 0;
-			} else {
-				console.log("creating new layers array");
-				data.layers = [];
-			}
-			
-			data.center = APP_CONFIG.center;			
-			
-			//console.log("resetMap, data.center:");
-			//console.log(data.center);
-		
-			if (project) {
-				data.center.lat = project.centerLat;
-				data.center.lon = project.centerLon;
-				data.center.zoom = project.zoom;
-				data.aoi = project.aoi;
-				data.showAll = true; //project.showAll;
-			} else {
-				data.center.lat = APP_CONFIG.initialLat;
-				data.center.lon = APP_CONFIG.initialLon;
-				data.center.zoom = APP_CONFIG.initialZoom;
-				data.aoi = undefined;
-				data.showAll = true;
-			}
-			
-			console.log("calling API for groups");
-			let remoteGroups = LayerGroups.query(function() {
-				console.log("groups call completed");
-				console.log(remoteGroups);
-				remoteGroups.forEach(function(group) {
-					group.active = true;
-					group.showAll = data.showAll;
-					data.groups.push(group);
+				$rootScope.$broadcast('initializingMap', {
+					data: ''
 				});
 				
-				console.log("data.groups = ");console.log(data.groups);
-				console.log("data.groups[0].name = " + data.groups[0].name);
-				if (project) {
-					data.groups.forEach(function(group) {group.active = false;}); //set everything to inactive initially
-					console.log("loading project");
-					project.groups.forEach(function(group) {
-						let parsedGroup = JSON.parse(JSON.stringify(group));
-						console.log("parsedGroup.name = " + parsedGroup.name);
-						//let index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
-						//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
-						let index;
-						if (data.groups.findIndex) {
-							index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
-						} else { //IE
-							for (let x = 0; x < data.groups.length; x++) {
-								if (data.groups[x].name == parsedGroup.name) {
-									index = x;
-									break;
-								}
-							}
-						}
-						console.log("index = " + index + " "); console.log(data.groups[index]);
-						if (index > -1) {
-							data.groups[index].active = parsedGroup.active;
-							data.groups[index].showAll = true; //parsedGroup.showAll;
-							data.groups[index].inProject = true;
-						}
-					});
+				if (data.groups) {
+					console.log("resetting groups array");
+					data.groups.length = 0;
+				} else {
+					console.log("creating new groups array");
+					data.groups = [];
 				}
 
+				if (data.layers) {
+					console.log("resetting layers array");
+					data.layers.length = 0;
+				} else {
+					console.log("creating new layers array");
+					data.layers = [];
+				}
 				
-				console.log("calling API for layers");
-				let remoteLayers = Layers.query(function() {
-					console.log("layers call completed");
-					remoteLayers.forEach(function(remoteLayer) {
-						//console.log("remoteLayer");console.log(remoteLayer);
-						//console.log("remoteLayer.initial_opacity = " + remoteLayer.initial_opacity);
-						let layer = {
-							name: remoteLayer.name,
-							group: remoteLayer.layer_group,
-							visible: remoteLayer.is_initially_active,
-							opacity: remoteLayer.initial_opacity != undefined ? 
-								remoteLayer.initial_opacity : 
-								remoteLayer.layer_group === data.groups[0].name ? 1 : 0.5, //Base maps get full opacity, all others get half
-							layerType: remoteLayer.layer_type,
-							source: {
-								type: remoteLayer.source_type,
-								url: remoteLayer.source_url,
-								legend_url: remoteLayer.legend_url,
-								key: remoteLayer.key,
-								layer: remoteLayer.layer,
-								imagery_set: remoteLayer.imagery_set,
-								wfs: {
-									feature_namespace: remoteLayer.feature_namespace,
-									feature_prefix: remoteLayer.feature_prefix,
-									geometry_name: remoteLayer.geometry_name,
-									url: remoteLayer.wfs_url
-								}
-							}
-						};
-						
-						layer.source.params = {};
-						remoteLayer.params.forEach(function(remoteParam) {
-							layer.source.params [remoteParam.name] = remoteParam.value;
-						});
-						
-						if (remoteLayer.is_cors_challenged) {
-							layer.source.url = APP_CONFIG.corsProxy + layer.source.url;
-							layer.source.legend_url = APP_CONFIG.corsProxy + layer.source.legend_url;
-						}
-
-						if (layer.source.type === "TileArcGISRest") {
-							$http.get(layer.source.legend_url)
-								.then(function success(response){
-										layer.legend_json = response.data;
-									  },
-									  function error(response){
-										layer.legend_json = "not available";
-									  });
-						}
-
-						//console.log("layer:");
-						//console.log(layer);
-						data.layers.push(layer);
-						
+				data.center = APP_CONFIG.center;			
+				
+				//console.log("resetMap, data.center:");
+				//console.log(data.center);
+			
+				if (project) {
+					data.center.lat = project.centerLat;
+					data.center.lon = project.centerLon;
+					data.center.zoom = project.zoom;
+					data.aoi = project.aoi;
+					data.showAll = true; //project.showAll;
+				} else {
+					data.center.lat = APP_CONFIG.initialLat;
+					data.center.lon = APP_CONFIG.initialLon;
+					data.center.zoom = APP_CONFIG.initialZoom;
+					data.aoi = undefined;
+					data.showAll = true;
+				}
+				
+				console.log("calling API for groups");
+				let remoteGroups = LayerGroups.query(function() {
+					console.log("groups call completed");
+					console.log(remoteGroups);
+					remoteGroups.forEach(function(group) {
+						group.active = true;
+						group.showAll = data.showAll;
+						data.groups.push(group);
 					});
 					
 					if (project) {
-						data.layers.forEach(function(layer) {layer.visible = false;}); //set all to inactive initially
-						project.layers.forEach(function(layer) {
-							let parsedLayer = JSON.parse(JSON.stringify(layer));
-							//console.log("parsedLayer.name = " + parsedLayer.name);
-							//let index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+						data.groups.forEach(function(group) {group.active = false;}); //set everything to inactive initially
+						console.log("loading project");
+						project.groups.forEach(function(group) {
+							let parsedGroup = JSON.parse(JSON.stringify(group));
+							console.log("parsedGroup.name = " + parsedGroup.name);
+							//let index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
 							//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
 							let index;
 							if (data.groups.findIndex) {
-								index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+								index = data.groups.findIndex(function(element) {return element.name == parsedGroup.name;});
 							} else { //IE
-								for (let x = 0; x < data.layers.length; x++) {
-									if (data.layers[x].name == parsedLayer.name) {
+								for (let x = 0; x < data.groups.length; x++) {
+									if (data.groups[x].name == parsedGroup.name) {
 										index = x;
 										break;
 									}
 								}
 							}
-							//console.log("index = " + index + " "); console.log(data.layers[index]);
+							console.log("index = " + index + " "); console.log(data.groups[index]);
 							if (index > -1) {
-								data.layers[index].visible = (parsedLayer.visible == undefined) ? parsedLayer.active : parsedLayer.visible;
-								data.layers[index].opacity = parsedLayer.opacity;
-								data.layers[index].inProject = true;
+								data.groups[index].active = parsedGroup.active;
+								data.groups[index].showAll = true; //parsedGroup.showAll;
+								data.groups[index].inProject = true;
 							}
 						});
-					}	
-										
-					console.log("broadcasting mapInitialized");
-					$rootScope.$broadcast('mapInitialized', {
-						data: ''
-					});
+					}
 
-				});
-				
-			});	
+					
+					console.log("calling API for layers");
+					let remoteLayers = Layers.query(function() {
+						console.log("layers call completed");
+						remoteLayers.forEach(function(remoteLayer) {
+							//console.log("remoteLayer");console.log(remoteLayer);
+							//console.log("remoteLayer.initial_opacity = " + remoteLayer.initial_opacity);
+							let layer = {
+								name: remoteLayer.name,
+								group: remoteLayer.layer_group,
+								visible: remoteLayer.is_initially_active,
+								opacity: remoteLayer.initial_opacity != undefined ? 
+									remoteLayer.initial_opacity : 
+									remoteLayer.layer_group === data.groups[0].name ? 1 : 0.5, //Base maps get full opacity, all others get half
+								layerType: remoteLayer.layer_type,
+								source: {
+									type: remoteLayer.source_type,
+									url: remoteLayer.source_url,
+									legend_url: remoteLayer.legend_url,
+									key: remoteLayer.key,
+									layer: remoteLayer.layer,
+									imagery_set: remoteLayer.imagery_set,
+									wfs: {
+										feature_namespace: remoteLayer.feature_namespace,
+										feature_prefix: remoteLayer.feature_prefix,
+										geometry_name: remoteLayer.geometry_name,
+										url: remoteLayer.wfs_url
+									},
+									metadata: remoteLayer.metadata,
+								}
+							};
+							
+							layer.source.params = {};
+							remoteLayer.params.forEach(function(remoteParam) {
+								layer.source.params [remoteParam.name] = remoteParam.value;
+							});
+							
+							if (remoteLayer.is_cors_challenged) {
+								layer.source.url = APP_CONFIG.corsProxy + layer.source.url;
+								layer.source.legend_url = APP_CONFIG.corsProxy + layer.source.legend_url;
+							}
+
+							if (layer.source.type === "TileArcGISRest") {
+								$http.get(layer.source.legend_url)
+									.then(function success(response){
+											layer.legend_json = response.data;
+										  },
+										  function error(response){
+											layer.legend_json = "not available";
+										  });
+							}
+
+							//console.log("layer:");
+							//console.log(layer);
+							data.layers.push(layer);
+							
+						});
+						
+						if (project) {
+							data.layers.forEach(function(layer) {layer.visible = false;}); //set all to inactive initially
+							project.layers.forEach(function(layer) {
+								let parsedLayer = JSON.parse(JSON.stringify(layer));
+								//console.log("parsedLayer.name = " + parsedLayer.name);
+								//let index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+								//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
+								let index;
+								if (data.groups.findIndex) {
+									index = data.layers.findIndex(function(element) {return element.name == parsedLayer.name;});
+								} else { //IE
+									for (let x = 0; x < data.layers.length; x++) {
+										if (data.layers[x].name == parsedLayer.name) {
+											index = x;
+											break;
+										}
+									}
+								}
+								//console.log("index = " + index + " "); console.log(data.layers[index]);
+								if (index > -1) {
+									data.layers[index].visible = (parsedLayer.visible == undefined) ? parsedLayer.active : parsedLayer.visible;
+									data.layers[index].opacity = parsedLayer.opacity;
+									data.layers[index].inProject = true;
+								}
+							});
+						}	
+											
+						console.log("broadcasting mapInitialized");
+						$rootScope.$broadcast('mapInitialized', {
+							data: ''
+						});
+						resolve();
+
+					});
+					
+				});	
+			});
 			
 		}
 					

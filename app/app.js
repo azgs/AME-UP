@@ -28,6 +28,10 @@ var app = angular.module('mapApp', [
     url: '/',
     templateUrl: 'cover/cover.html'
   })
+  .state('help', {
+    url: '/help',
+    templateUrl: 'help/help.html'
+  })
   .state('map', {
     url: '/map',
     templateUrl: 'map/map.html',
@@ -59,6 +63,13 @@ var app = angular.module('mapApp', [
 		);
 	}
 
+	$scope.help = function(event) {
+		console.log("help clicked");
+		$state.go('help');
+		$rootScope.toggleSideNav();
+
+	}
+	
 	$scope.projectData = ProjectSettings.data;
 	$scope.authData = Auth.data;
 	
