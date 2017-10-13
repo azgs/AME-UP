@@ -128,6 +128,14 @@
 										</md-tooltip>
 										Military Encroachment
 									</md-button>
+									<!--
+									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Other Considerations')">
+										<md-tooltip md-direction="right" md-autohide="true">
+											Generate a list of other issues (infrastructure, environmental, etc.) in you Area of Interest.
+										</md-tooltip>
+										Other Considerations
+									</md-button>
+									-->
 									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Permitting')">
 										<md-tooltip md-direction="right" md-autohide="true">
 											Generate a list of permits that will be required in your Area of Interest.
@@ -146,6 +154,28 @@
 										</md-tooltip>
 										Environmental
 									</md-button>
+									<!--
+									<md-divider style="margin-top: 30px; margin-bottom: 10px;"></md-divider>
+									<div id="header" class="md-body-1">
+										<div style="padding-bottom:10px"><b>User:</b> {{userName}}</div>
+										<div id="projectInfo" ng-show="projectData.currentProject" style="padding-bottom:10px">
+											<div><b>Project Info</b></div>
+											<div style="margin-left:15px">
+												<div><b>Name:</b> {{projectData.currentProject.name}}</div>
+												<div><b>Type:</b> {{projectData.currentProject.type.name}}</div>
+												
+												<div style="margin-left:15px">
+													<div ng-repeat="attribute in projectData.currentProject.type.attributes">
+														<div>
+															<b>{{attribute.caption}}:</b> {{attribute.value}}
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									-->
+									
 								</md-content>
 							</md-tab-body>
 						</div>
@@ -153,7 +183,7 @@
 						<md-tab ng-if="data.showResultsTab" label="Results">
 						<div ng-controller="ResultsTabController" style="height:100%">
 							<md-tab-body>
-								<div layout-padding ng-if="!data.result && !data.showProgressSpinner" class="md-body-2" style="opacity:0.7;margin-bottom:20px;">
+								<div layout-padding ng-if="!data.result && !data.showProgressSpinner" class="md-headline" style="opacity:0.7;margin-top:100px;text-align: center;">
 									Click a point on the map to see what's there.
 								</div>
 								<md-progress-circular ng-if="data.showProgressSpinner" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;margin-top:50px"></md-progress-circular>
@@ -205,88 +235,102 @@
 				</md-content>
 	
 				<md-content id="mapContent" style="width:71%;height:100%">
-					<openlayers  width="71%" height="93%" ol-defaults="defaults" ol-center="center" ol-view="view" custom-layers="true" style="position:fixed">
+					<openlayers  width="71%" height="93%" ol-defaults="defaults" ol-center="center"  ol-view="view" custom-layers="true" style="position:fixed">
 							<ol-control name="{{ control.name }}" ng-repeat="control in controls|filter: {active: true}"></ol-control>
 							<ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers"></ol-layer>
 					</openlayers>
 					<div layout="row" style="position:absolute; top: 10px; right:1%;">
-					<!--
-					<md-button ng-if="!toolsData.infoMode" class="md-primary md-raised md-small" ng-click="infoClicked()" >
-						<md-icon md-font-icon="fa-info"  class="fa" style="font-size:25px">
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Enter feature query mode
-							</md-tooltip>
-						</md-icon>
-					</md-button>
-					<md-button ng-if="toolsData.infoMode" class="md-accent md-raised md-small" ng-click="infoClicked()">
-						<md-icon md-font-icon="fa-info"  class="fa" style="font-size:25px">
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Leave query mode
-							</md-tooltip>							
-						</md-icon>
-					</md-button>
-					-->
-					<md-button ng-if="!toolsData.otherInfoMode" class="md-primary md-raised md-small" ng-click="otherInfoClicked()" >
-						<md-icon md-font-icon="fa-info-circle"  class="fa" style="font-size:25px">
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Enter feature query mode
-							</md-tooltip>
-						</md-icon>
-					</md-button>
-					<md-button ng-if="toolsData.otherInfoMode" class="md-accent md-raised md-small" ng-click="otherInfoClicked()">
-						<md-icon md-font-icon="fa-info-circle"  class="fa" style="font-size:25px">
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Leave feature query mode
-							</md-tooltip>							
-						</md-icon>
-					</md-button>
-					
-					<md-button ng-if="!toolsData.bboxMode" class="md-primary md-raised md-small" ng-click="bboxClicked()" >
-						<md-icon  class="material-icons md-primary" >
-							aspect_ratio
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Specify Area of Interest using a bounding box
-							</md-tooltip>
-						</md-icon>
-					</md-button>
-					<md-button ng-if="toolsData.bboxMode" class="md-accent md-raised md-small" ng-click="bboxClicked()">
-						<md-icon class="material-icons md-accent">
-							aspect_ratio
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Leave bounding box mode
-							</md-tooltip>							
-						</md-icon>
-					</md-button>
+						<!--
+						<md-button ng-if="!toolsData.infoMode" class="md-primary md-raised md-small" ng-click="infoClicked()" >
+							<md-icon md-font-icon="fa-info"  class="fa" style="font-size:25px">
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Enter feature query mode
+								</md-tooltip>
+							</md-icon>
+						</md-button>
+						<md-button ng-if="toolsData.infoMode" class="md-accent md-raised md-small" ng-click="infoClicked()">
+							<md-icon md-font-icon="fa-info"  class="fa" style="font-size:25px">
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Leave query mode
+								</md-tooltip>							
+							</md-icon>
+						</md-button>
+						-->
+						
+						<md-button ng-if="!toolsData.otherInfoMode" class="md-primary md-raised md-small" ng-click="otherInfoClicked()" >
+							<md-icon md-font-icon="fa-info-circle"  class="fa" style="font-size:25px">
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Enter feature query mode
+								</md-tooltip>
+							</md-icon>
+						</md-button>
+						<md-button ng-if="toolsData.otherInfoMode" class="md-accent md-raised md-small" ng-click="otherInfoClicked()">
+							<md-icon md-font-icon="fa-info-circle"  class="fa" style="font-size:25px">
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Leave feature query mode
+								</md-tooltip>							
+							</md-icon>
+						</md-button>
+						
+						<md-button ng-if="!toolsData.bboxMode" class="md-primary md-raised md-small" ng-click="bboxClicked()" >
+							<md-icon  class="material-icons md-primary" >
+								aspect_ratio
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Specify Area of Interest using a bounding box
+								</md-tooltip>
+							</md-icon>
+						</md-button>
+						<md-button ng-if="toolsData.bboxMode" class="md-accent md-raised md-small" ng-click="bboxClicked()">
+							<md-icon class="material-icons md-accent">
+								aspect_ratio
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Leave bounding box mode
+								</md-tooltip>							
+							</md-icon>
+						</md-button>
 
-					<md-button ng-if="!toolsData.polyMode" class="md-primary md-raised md-small" ng-click="polyClicked()" >
-						<md-icon  class="material-icons md-primary" >
-							timeline
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Specify Area of Interest by drawing a polygon
-							</md-tooltip>
-						</md-icon>
-					</md-button>
-					<md-button ng-if="toolsData.polyMode" class="md-accent md-raised md-small" ng-click="polyClicked()">
-						<md-icon class="material-icons md-accent">
-							timeline
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Leave polygon mode
-							</md-tooltip>							
-						</md-icon>
-					</md-button>
+						<md-button ng-if="!toolsData.polyMode" class="md-primary md-raised md-small" ng-click="polyClicked()" >
+							<md-icon  class="material-icons md-primary" >
+								timeline
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Specify Area of Interest by drawing a polygon
+								</md-tooltip>
+							</md-icon>
+						</md-button>
+						<md-button ng-if="toolsData.polyMode" class="md-accent md-raised md-small" ng-click="polyClicked()">
+							<md-icon class="material-icons md-accent">
+								timeline
+								<md-tooltip md-direction="bottom" md-autohide="true">
+									Leave polygon mode
+								</md-tooltip>							
+							</md-icon>
+						</md-button>
 					</div>
 					
-					<div layout="row" style="position:absolute; top: 60px; right:1%;">
-					<md-button ng-if="!toolsData.infoMode" class="md-primary md-raised md-small" ng-click="homeExtent()" >
-						<!--<md-icon md-font-icon="fa-home"  class="fa" style="font-size:25px">-->
-						<md-icon class="material-icons md-accent">
-							zoom_out_map
-							<md-tooltip md-direction="bottom" md-autohide="true">
-								Return to original extent
-							</md-tooltip>
-						</md-icon>
-					</md-button>
+					<!--<div layout="row" style="position:absolute; top: 60px; right:1%;">-->
+					<div style="position:absolute; top: 7em; left:0.15em;">
+						<md-button ng-if="!toolsData.infoMode" class="md-primary md-raised md-small" style="background-color:rgba(0,60,136,0.5);transform: scale(0.94);" ng-click="homeExtent()" >
+							<md-icon class="material-icons md-accent">
+								zoom_out_map
+								<md-tooltip md-direction="right" md-autohide="true">
+									Return to original extent
+								</md-tooltip>
+							</md-icon>
+						</md-button>
 					</div>
+					
+					<!--<div style="position:absolute; top: 110px; right:1%;" >-->
+					<div style="position:absolute; top: 10em; left:0.15em;" >
+						<md-button ng-if="!toolsData.infoMode" class="md-primary md-raised md-small" style="background-color:rgba(0,60,136,0.5);transform: scale(0.94);" ng-click="searchClicked($event)" >
+							<md-icon class="material-icons md-accent">
+								search
+								<md-tooltip md-direction="right" md-autohide="true">
+									Search for a location
+								</md-tooltip>
+							</md-icon>
+						</md-button>
+					</div>
+					
 					
 					<div id="positionDisplay" class="ol-scale-line ol-unselectable" style="position:absolute; top: 96.5%; left:90%; visibility:hidden;"></div>
 				</md-content>

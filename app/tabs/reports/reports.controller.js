@@ -1,6 +1,20 @@
-angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMaterial', 'ngFileSaver'])
+angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMaterial', 'ngFileSaver', 'AuthService'])
 
-.controller('ReportsTabController', function ReportsTabController($scope, $rootScope, FileSaver, Blob, Projects, MapSettings, ProjectSettings, Reports, APP_CONFIG, $mdDialog, $mdToast, $q)
+.filter('filterAttributes', function() {
+    return function(items, inclusionTest) {
+        var filtered = {};
+
+        angular.forEach(items, function(item, key) {
+            if (inclusionTest(key)) {
+                filtered[key] = item;
+            }
+        });
+
+        return filtered;
+    };
+})
+
+.controller('ReportsTabController', function ReportsTabController($scope, $rootScope, FileSaver, Blob, Projects, MapSettings, ProjectSettings, Reports, Auth, APP_CONFIG, $mdDialog, $mdToast, $q, filterAttributesFilter)
 {
 	$scope.reportClicked = function(event, type) {
 		//console.log("reportClicked, boxExtent = " + $scope.boxExtent);
@@ -33,26 +47,44 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 		alert = $mdDialog.alert({
 			title: type.charAt(0).toUpperCase() + type.slice(1) + ' Report',
 			//textContent: '<tabular results here>',
-			locals: { reportName: type.charAt(0).toUpperCase() + type.slice(1) },
+			locals: { 
+				reportName: type.charAt(0).toUpperCase() + type.slice(1),
+				userName: Auth.data.username,
+				project: ProjectSettings.data.currentProject
+			},
 			controller: DialogController,
 			templateUrl: 'tabs/reports/report_dialog.html',
 			targetEvent: event,
 			ok: 'Done'
 		});
-		function DialogController($scope, $mdDialog, reportName) {
+		function DialogController($scope, $mdDialog, reportName, userName, project) {
 			$scope.reportName = reportName;
-			$scope.implemented = (reportName === 'Contact' || reportName === 'Military Encroachment' || reportName === 'Permitting' || reportName ==='Infrastructure' || reportName === 'Environmental');
+			$scope.implemented = (reportName === 'Contact' || reportName === 'Military Encroachment' || reportName === 'Permitting' || reportName ==='Infrastructure' || reportName === 'Environmental' || reportName === 'Other Considerations');
+			$scope.userName = userName;
+			$scope.project = project;
+			$scope.date = new Date();
+			
+			$scope.featureCounter = {count:0}; //Used to index the feature records across featureTypes
+			
+			$scope.omitStandardFields = function(key) {
+				return (['Mil Zone ID', 'Restriction Type', 'Service', 'Description', 'Office', 'Contact'].indexOf(key) == -1)
+			}
+			
+			//console.log("project name = " + project.name);
+			
 			//TODO: Probably should hit the Reports endpoint from a service rather than here
 			//TODO: Column headers should not be hard-coded in report_dialog.html if that file is to be generic.
+
 			/*
-			if (reportName === 'Contact') {
-				//$scope.results = Reports.get({report: 'contact', filter: '{"type":"Polygon","coordinates":[[[-110.71287778,32.27194444],[-109.19132222,32.27194444],[-109.19132222,33.01055556],[-110.71287778,33.01055556],[-110.71287778,32.27194444]]]}'});
-				$scope.results = Reports.get({report: 'contact', filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
-				$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});
-			}
-			*/
 			$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
 			$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});
+			*/
+			let canvas = document.getElementsByTagName('canvas')[0]; //This magically grabs the map canvas
+			canvas.toBlob(function (blob) {
+				$scope.thumbURL = URL.createObjectURL(blob)
+				$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
+				$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});		
+			})	
 			
 			$scope.closeDialog = function() {
 				$mdDialog.hide();
@@ -69,7 +101,8 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 					console.log("csv = " + csvStr);
 					
 					let data = new Blob([csvStr], { type: 'text/plain;charset=utf-8' });
-					let dateStr = new Date().toLocaleDateString();
+					//let dateStr = new Date().toLocaleDateString();
+					let dateStr = $scope.date.toLocaleDateString();
 					FileSaver.saveAs(data, "ContactReport - " + dateStr + ".csv");
 				} else if (reportName === "Military Encroachment") {
 					let csvStr = 'Mil Zone ID,Restriction Type,Service,Minimum Altitude,Description,Office,Contact\n';
@@ -95,7 +128,8 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 						onrendered: function (canvas) {
 							let data = canvas.toDataURL();
 							
-							let dateStr = new Date().toLocaleDateString();
+							//let dateStr = new Date().toLocaleDateString();
+							let dateStr = $scope.date.toLocaleDateString();
 							
 							let docDef = {
 								pageOrientation: 'landscape',
@@ -135,6 +169,8 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 						}
 					});		
 				} else if (reportName === "Military Encroachment") {
+					/*********************
+					//This version builds tables in pdfMake. Has trouble rendering xml and splitting fancy tables
 					document.getElementById('introText').scrollIntoView();
 					html2canvas(document.getElementById('introText'), {
 						logging: true,
@@ -152,40 +188,6 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 									
 									let dateStr = new Date().toLocaleDateString();
 
-									/*******
-									//This version displays results in a simple table
-									let docDef = {
-										pageOrientation: 'landscape',
-										footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-										content: [
-											{ text: 'Military Encroachment Report ' + dateStr, fontSize: 22, bold:true },
-											{image: introData, width: 740},
-											{table: {
-												headerRows: 1,
-												dontBreakRows: true,
-												body: [
-													[
-														{text: 'Mil Zone ID', bold:true}, 
-														{text: 'Restriction Type', bold:true},
-														{text: 'Service', bold:true},
-														{text: 'Minimum Altitude', bold:true},
-														{text: 'Description', bold:true}, 
-														{text: 'Office', bold:true},
-														{text: 'Contact', bold:true}
-													]
-												],
-												fontSize: 10
-											}},
-											{image: endData, width: 740}
-										]
-									}
-
-									$scope.results.records.forEach(function(r) {
-										docDef.content[2].table.body.push([r.military_zone_id, r.restriction_type, r.service, r.minimum_altitude, r.comment, r.office, r.contact_name + ", " +r.contact_email + ", "  + r.contact_phone]);
-									});
-									********/
-									
-								
 									let docDef = {
 										pageOrientation: 'landscape',
 										footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
@@ -264,14 +266,136 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 										docDef.content.push(table);
 										docDef.content.push({text:' ', marginTop: 15});
 									});
-									
-									docDef.content.push({image: endData, width: 740});
-									
 									pdfMake.createPdf(docDef).download("MilitaryEncroachmentReport - " + dateStr + ".pdf");
 								}
 							});
 						}
 					});	
+					**************/
+								
+									
+			
+					let dateStr = new Date().toLocaleDateString();
+								
+					let docDef = {
+						pageOrientation: 'landscape',
+						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
+						content: [
+							{ text: 'Military Encroachment Report ' + dateStr, fontSize: 22, bold:true },
+							{ text: ' ', fontSize: 22, bold:true },
+						]
+					};
+					
+					let doTheThing = function(x) {
+						console.log("feature couter = " + $scope.featureCounter.count);
+						const divID = "me_rec_" + x;
+						console.log("processing " + divID);
+						const element = document.getElementById(divID);
+						element.scrollIntoView();
+						html2canvas(element, {
+							logging: true,
+							background: '#ffffff',
+							onrendered: function (divCanvas) {
+								const divData = divCanvas.toDataURL();
+								docDef.content.push({image: divData, width: 740});
+								if (++x < $scope.featureCounter.count) { 
+									doTheThing(x);
+								} else {
+									const element = document.getElementById('endText');
+									element.scrollIntoView();
+									html2canvas(element, {
+										logging: true,
+										onrendered: function (endCanvas) {	
+											const endData = endCanvas.toDataURL();
+											docDef.content.push({image: endData, width: 740});
+											const element = document.getElementById('footer');
+											element.scrollIntoView();
+											html2canvas(element, {
+												logging: true,
+												useCORS: true,
+												onrendered: function (footerCanvas) {	
+													const footerData = footerCanvas.toDataURL();
+													docDef.content.push({image: footerData, width: 740});
+													pdfMake.createPdf(docDef).download("MilitaryEncroachmentReport - " + dateStr + ".pdf");
+												}
+											});
+										}
+									});
+									
+								}
+							}
+						});
+							
+					};					
+					
+					const element = document.getElementById('header');
+					element.scrollIntoView();
+					html2canvas(element, {
+						logging: true,
+						onrendered: function (headerCanvas) {	
+							const headerData = headerCanvas.toDataURL();
+							docDef.content.push({image: headerData, width: 740});
+							
+							const element = document.getElementById('introText');
+							element.scrollIntoView();
+							
+							html2canvas(element, {
+								logging: true,
+								onrendered: function (introCanvas) {	
+									const introData = introCanvas.toDataURL();
+									docDef.content.push({image: introData, width: 740});
+
+									let x = 0;
+									doTheThing(x);
+								}
+							});
+						}
+					});
+				} else { //TODO: Implement other reports
+					let dateStr = new Date().toLocaleDateString();
+								
+					let docDef = {
+						pageOrientation: 'landscape',
+						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
+						content: [
+							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
+							{ text: ' ', fontSize: 22, bold:true },
+						]
+					};
+					
+					const element = document.getElementById('header');
+					element.scrollIntoView();
+					html2canvas(element, {
+						logging: true,
+						onrendered: function (headerCanvas) {	
+							console.log("header rendered");
+							const headerData = headerCanvas.toDataURL();
+							docDef.content.push({image: headerData, width: 740});
+							const element = document.getElementById('introText');
+							element.scrollIntoView();
+							html2canvas(element, {
+								logging: true,
+								onrendered: function (introCanvas) {	
+									console.log("intro rendered");
+									const introData = introCanvas.toDataURL();
+									docDef.content.push({image: introData, width: 740});
+									const element = document.getElementById('footer');
+									element.scrollIntoView();
+									html2canvas(element, {
+										logging: true,
+										useCORS: true,
+										onrendered: function (footerCanvas) {	
+											console.log("footer rendered");
+											const footerData = footerCanvas.toDataURL();
+											docDef.content.push({image: footerData, width: 740});
+											pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
+										}
+									});
+								}
+							});
+						}
+					});;
+					
 				}
 			}
 		}

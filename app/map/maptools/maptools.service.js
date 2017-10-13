@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('MapToolsService', ['APIService', 'SettingsService'])
-	.factory('MapTools', function($rootScope, $mdToast, $mdDialog, $q, MapSettings, LayersTabSettings, APP_CONFIG, InfoTool, OtherInfoTool) {
+angular.module('MapToolsService', ['APIService', 'SettingsService', 'ngMessages'])
+	.factory('MapTools', function($rootScope, $mdToast, $mdDialog, $q, MapSettings, LayersTabSettings, APP_CONFIG, InfoTool, OtherInfoTool, SearchTool) {
 		console.log("MapTools init enter");
 		
 		let data = {
@@ -24,6 +24,10 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			MapSettings.data.center.lon = APP_CONFIG.initialLon;
 			MapSettings.data.center.zoom = APP_CONFIG.initialZoom;
 			MapSettings.data.view.rotation = 0;
+		}
+		
+		let searchClicked = function(event) {
+			SearchTool.showSearchDialog(event);
 		}
 
 		let features = new ol.Collection();
@@ -98,14 +102,7 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			}
 		}
 	
-		let dragBox = new ol.interaction.DragBox({
-			//condition: ol.events.condition.shiftKeyOnly,
-			style: new ol.style.Style({
-				stroke: new ol.style.Stroke({
-					color: [0, 0, 255, 1]
-				})
-			})
-		});
+		let dragBox;
 		let layer;
 
 		let addBboxInteraction = function() {
@@ -119,28 +116,34 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				features.push(new ol.Feature(MapSettings.data.aoi));
 			}
 			featureOverlay.setMap(MapSettings.data.theMap);
-			
-			dragBox.on('boxend', function(evt) {
-				console.log("boxend");
-				document.getElementById('positionDisplay').style.visibility = "hidden";
-				
-				MapSettings.data.aoi = dragBox.getGeometry();	
-				$rootScope.$apply();//I have no idea why, but this is necessary to get the watcher to fire. I think it has to do with the fact that aoi is never attached to a scope. 
-				
-				features.push(new ol.Feature(MapSettings.data.aoi));
-				featureOverlay.setMap(MapSettings.data.theMap);	
-			});
+	
+			if (!dragBox) {
+				dragBox = new ol.interaction.DragBox({
+					//condition: ol.events.condition.shiftKeyOnly,
+					className: 'myDragBox'
+				});
+				dragBox.on('boxend', function(evt) {
+					console.log("boxend");
+					document.getElementById('positionDisplay').style.visibility = "hidden";
+					
+					MapSettings.data.aoi = dragBox.getGeometry();	
+					$rootScope.$apply();//I have no idea why, but this is necessary to get the watcher to fire. I think it has to do with the fact that aoi is never attached to a scope. 
+					
+					features.push(new ol.Feature(MapSettings.data.aoi));
+					//featureOverlay.setMap(MapSettings.data.theMap);	
+				});
 
-			// To remove the layer when start drawing a new dragbox
-			dragBox.on('boxstart', function(evt) {
-				features.clear();
-				featureOverlay.setMap(null);
-				MapSettings.data.aoi = undefined;
-			});		
+				// To remove the layer when start drawing a new dragbox
+				dragBox.on('boxstart', function(evt) {
+					features.clear();
+					//featureOverlay.setMap(null);
+					MapSettings.data.aoi = undefined;
+				});		
 
-			dragBox.on('boxdrag', function(evt) {
-				document.getElementById('positionDisplay').style.visibility = "visible";
-			});		
+				dragBox.on('boxdrag', function(evt) {
+					document.getElementById('positionDisplay').style.visibility = "visible";
+				});		
+			}
 			
 			MapSettings.data.theMap.addInteraction(dragBox);
 			MapSettings.data.selectedTabIndex = 2;
@@ -224,8 +227,8 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 				return;
 			}
 			
-			featureOverlay.setMap(null);
 			features.clear();
+			featureOverlay.setMap(null);
 			MapSettings.data.theMap.removeInteraction(modify);
 			MapSettings.data.theMap.removeInteraction(draw);
 			MapSettings.data.selectedTabIndex = 0;
@@ -256,7 +259,8 @@ angular.module('MapToolsService', ['APIService', 'SettingsService'])
 			otherInfoClicked: otherInfoClicked,
 			layerClicked: layerClicked,
 			bboxClicked: bboxClicked,
-			polyClicked: polyClicked
+			polyClicked: polyClicked,
+			searchClicked: searchClicked
 		}
 		
 	});

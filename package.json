@@ -17,6 +17,8 @@
     "protractor": "^3.2.2"
   },
   "scripts": {
+    "install-windows-service": "winser -i",
+    "uninstall-windows-service": "winser -r",
     "postinstall": "bower install",
     "prestart": "npm install",
     "startx": "http-server -a localhost -p 8000 -c-1 ./app",
@@ -35,6 +37,7 @@
     "express": "^4.14.0",
     "request": "^2.75.0",
     "requirejs": "^2.3.2",
-    "ssl-root-cas": "^1.2.3"
+    "ssl-root-cas": "^1.2.3",
+    "winser": "^1.0.2"
   }
 }

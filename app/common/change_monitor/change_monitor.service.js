@@ -92,9 +92,33 @@ angular.module('ChangeMonitorService', ['SettingsService'])
 				true
 			));
 			
-			watchers.push($rootScope.$watch(function(){return ProjectSettings.data.currentProject;},
+			watchers.push($rootScope.$watch(function(){
+					//return ProjectSettings.data.currentProject;
+					if (ProjectSettings.data.currentProject) {
+						//There's a flakey circular reference problem that sometimes crops up with the aoi field. To get around it,
+						//I'm doing this conversion to GeoJSON upstream of the compare. I know it's a hack.
+						let aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(ProjectSettings.data.currentProject.aoi);
+						//console.log("aoiGeoJSON = "); console.log(aoiGeoJSON);
+						return {
+							name: ProjectSettings.data.currentProject.name,
+							zoom: ProjectSettings.data.currentProject.zoom,
+							centerLon: ProjectSettings.data.currentProject.centerLon,
+							centerLat: ProjectSettings.data.currentProject.centerLat,
+							showAll: ProjectSettings.data.currentProject.showAll,
+							groups: ProjectSettings.data.currentProject.groups,
+							layers: ProjectSettings.data.currentProject.layers,
+							aoi: aoiGeoJSON,
+							type: ProjectSettings.data.currentProject.type
+						}
+					} else {
+						return null;
+					}
+					
+				},
 				function(newVal, oldVal){
-					if (angular.equals(newVal, oldVal)/*newVal === oldVal*/) {
+					//This is all here to eat the first init compare
+					//console.log("newVal ="); console.log(newVal);
+					if (angular.equals(newVal, oldVal)) {
 						//console.log("values are same");
 					} else {
 						//console.log("values are different");

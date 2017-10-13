@@ -144,3 +144,10 @@ md-toolbar.md-dialog-toolbar .md-toolbar-tools {
 }
 
 
+.myDragBox {
+	box-sizing:border-box;
+	border-radius:3px;
+	border:3px solid #0099ff;
+	background-color:rgba(255,255,255,0.2);
+	outline:solid #ffffff 1px;
+}

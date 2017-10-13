@@ -13,7 +13,7 @@
 					</md-icon>
 				</md-button>
 				<md-menu-content>
-					<md-menu-item>
+					<md-menu-item ng-show="reportName === 'Contact'"">
 						<md-button ng-click="csvDownloadClicked()">
 							<md-tooltip md-direction="right" md-autohide="true">
 								Download as csv file
@@ -43,7 +43,26 @@
 			<div ng-if="results.$resolved" id="reportBody">
 				<span ng-if="error">{{error}}</span>
 				<div ng-if="!error">
-					<div id="introText" ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-bottom:15px;">
+					<div id="header" class="md-body-1">
+						<div style="padding-bottom:10px"><b>Date generated:</b> {{date.toString()}}</div>
+						<div style="padding-bottom:10px"><b>User:</b> {{userName}}</div>
+						<div id="projectInfo" ng-show="project" style="padding-bottom:10px">
+							<div><b>Project Info</b></div>
+							<div style="margin-left:15px">
+								<div><b>Name:</b> {{project.name}}</div>
+								<div><b>Type:</b> {{project.type.name}}</div>
+								
+								<div style="margin-left:15px">
+									<div ng-repeat="attribute in project.type.attributes">
+										<div>
+											<b>{{attribute.caption}}:</b> {{attribute.value}}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="introText" ng-show="results.textBoxContent[0]" ng-bind-html="results.textBoxContent[0]" class="md-body-1" style="padding-top:30px;padding-bottom:30px;">
 					</div>
 					<table class="report-table" ng-show="reportName === 'Contact'">
 						<tr>
@@ -69,77 +88,64 @@
 							<td>{{contact.street}}, {{contact.city}}, {{contact.state}} {{contact.zip_code}}</td>
 						</tr>
 					</table>
-					<!-- simple table version
-					<table class="report-table" ng-show="reportName === 'Military Encroachment'">
-						<tr>
-							<th>Mil Zone ID</th>
-							<th>Restriction Type</th>
-							<th>Service</th>
-							<th>Minimum Altitude</th>
-							<th>Description</th>
-							<th>Office</th>
-							<th>Contact</th>
-						</tr>
-						<tr ng-repeat="r in results.records">
-							<td>{{r.military_zone_id}}</td>
-							<td>{{r.restriction_type}}</td>
-							<td>{{r.service}}</td>
-							<td>{{r.minimum_altitude}}</td>
-							<td><div ng-bind-html="r.comment"></div></td>
-							<td>{{r.office}}</td>
-							<td>{{r.contact_name}}, {{r.contact_email}}, {{r.contact_phone}}</td>
-						</tr>
-					</table>
-					-->
 					<div ng-show="reportName === 'Military Encroachment'">
-						<div ng-repeat="r in results.records">
-							<table style="border:1px solid black; margin-bottom:30px">
-								<tr>
-									<td>
-										<table width="100%" style="border:1px solid black;border-collapse: collapse;">
-											<tr>
-												<th style="border:1px solid black;border-collapse: collapse;">Mil Zone ID</th>
-												<th style="border:1px solid black;border-collapse: collapse;">Restriction Type</th>
-												<th style="border:1px solid black;border-collapse: collapse;">Service</th>
-												<th style="border:1px solid black;border-collapse: collapse;">Minimum Altitude</th>
-											</tr>
-											<tr>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.military_zone_id}}</td>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.restriction_type}}</td>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.service}}</td>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.minimum_altitude}}</td>
-											</tr>
-										</table>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<table  width="100%">
-											<tr>
-												<td><div ng-bind-html="r.comment"></div></td>
-											</tr>
-										</table>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<table  width="100%"  style="border:1px solid black;border-collapse: collapse;">
-											<tr>
-												<th style="border:1px solid black;border-collapse: collapse;">Office</th>
-												<th style="border:1px solid black;border-collapse: collapse;">Contact</th>
-											</tr>
-											<tr>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.office}}</td>
-												<td style="border:1px solid black;border-collapse: collapse;">{{r.contact_name}}, {{r.contact_email}}, {{r.contact_phone}}</td>
-											</tr>
-										</table>
-									</td>
-								</tr>
-							</table>
+						<div ng-if="results.featureTypes.length === 0" class="md-title" id="me_rec_0">
+							No military encroachments detected in your area of interest
+						</div>
+						<div ng-repeat="featureType in results.featureTypes" ng-init="current = $parent.featureCounter.count; $parent.featureCounter.count = $parent.featureCounter.count + featureType.features.length;">
+							<div ng-repeat="feature in featureType.features" id="me_rec_{{current+$index}}" style="padding-bottom:30px">
+								<table style="border:1px solid black;">
+									<tr>
+										<td>
+											<table width="100%" style="border:1px solid black;border-collapse: collapse;">
+												<tr>
+													<th style="border:1px solid black;border-collapse: collapse;">Mil Zone ID</th>
+													<th style="border:1px solid black;border-collapse: collapse;">Restriction Type</th>
+													<th style="border:1px solid black;border-collapse: collapse;">Service</th>
+													<th style="border:1px solid black;border-collapse: collapse;" ng-repeat="(key, value) in feature | filterAttributes: omitStandardFields">{{key}}</th>
+												</tr>
+												<tr>
+													<td style="border:1px solid black;border-collapse: collapse;">{{feature['Mil Zone ID']}}</td>
+													<td style="border:1px solid black;border-collapse: collapse;">{{feature['Restriction Type']}}</td>
+													<td style="border:1px solid black;border-collapse: collapse;">{{feature['Service']}}</td>
+													<td style="border:1px solid black;border-collapse: collapse;" ng-repeat="(key, value) in feature | filterAttributes: omitStandardFields">{{value}}</td>
+												</tr>
+											</table>
+										</td>
+									</tr>								
+									<tr>
+										<td>
+											<table  width="100%">
+												<tr>
+													<td><div ng-bind-html="feature['Description']"></div></td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<table  width="100%"  style="border:1px solid black;border-collapse: collapse;">
+												<tr>
+													<th style="border:1px solid black;border-collapse: collapse;">Office</th>
+													<th style="border:1px solid black;border-collapse: collapse;">Contact</th>
+												</tr>
+												<tr>
+													<td style="border:1px solid black;border-collapse: collapse;">{{feature['Office']}}</td>
+													<td style="border:1px solid black;border-collapse: collapse;">{{feature['Contact']}}</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+							</div>
 						</div>
 					</div>
 
-					<div id="endText" ng-show="results.textBoxContent[1]" ng-bind-html="results.textBoxContent[1]" class="md-body-1" style="padding-top:15px;">
+					<div id="endText" ng-show="results.textBoxContent[1]" ng-bind-html="results.textBoxContent[1]" class="md-body-1" style="padding-top:20px;">
+					</div>
+					<div id="footer" style="padding-top:30px">
+						<div class="md-body-1"><b>Report area:</b></div>
+						<img ng-src="{{thumbURL}}" width="750">
 					</div>
 					
 				</div>

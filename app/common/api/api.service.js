@@ -82,22 +82,22 @@ angular.module('APIService', ['ngResource'])
 			get: {
 				method: 'GET',
 				isArray: false,//true,
-				//The result from the endpoint is an array nested three deep. It is more convenient to the html to flatten this 
-				//and this seems to be the best place to do it.
 				transformResponse: function(data, headers){
+					//The result from the endpoint for Contact Report is an array nested three deep. It is more convenient to the html to flatten this and this seems to be the best place to do it.
 					function flatten(arr) {
 					  return arr.reduce(function (flat, toFlatten) {
 						return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
 					  }, []);
-					}			
-					//let flattened = flatten(angular.fromJson(data));
-					//return flattened;
+					}	
+					
 					let result = angular.fromJson(data);
-					let flattened = flatten(result.records);
-					//console.log("flattened = "); console.log(flattened);
-					let returnObj = {textBoxContent: result.textBoxContent, records:flattened};
-					//console.log("returnObj = "); console.log(returnObj);
-					return returnObj
+					if (result.records) { //skip all this if not a Contact report
+						let flattened = flatten(result.records);
+						let returnObj = {textBoxContent: result.textBoxContent, records:flattened};
+						return returnObj;
+					} else {
+						return result;
+					}
 				}
 			}
 		});
@@ -143,5 +143,15 @@ angular.module('APIService', ['ngResource'])
 				isArray: false,
 			}
 			**/			
+		});
+	})
+	//Arguably, this should go somewhere else, since it's not part of our API server. But then again, I don't see a need to create a whole other service for it so... 
+	.factory('Nominatim', function($resource, APP_CONFIG) {
+		return $resource('http://nominatim.openstreetmap.org/search/:place', {}, {
+			query: {
+				method: 'GET',
+				isArray: true,
+				params:{format: 'json', addressdetails: 1, viewbox: '-114.877197, 31.2405812, -108.985342, 37.072575', bounded: 1}
+			}		
 		});
 	});

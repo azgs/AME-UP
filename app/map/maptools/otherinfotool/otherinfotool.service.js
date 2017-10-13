@@ -62,15 +62,15 @@ angular.module('MapToolsService')
 			features2.clear();
 		});
 
-		$rootScope.$on('visibilityChanged', function(event, data) {
-			console.log('received visibilityChanged');
-			infoEventHandler();
-		});
+		let visibilityUnregListener = null;
 		
 		let selectPoint = null;
 		let infoEventHandler = function(event) {
 			console.log("single click received");
 			console.log(event);
+			
+			MapSettings.data.selectedTabIndex = myHomeTab;
+			
 			features2.clear();
 			//let selectPoint = event.coordinate;
 			if (event) {
@@ -107,6 +107,10 @@ angular.module('MapToolsService')
 			MapSettings.data.theMap.on('singleclick', infoEventHandler);
 			MapSettings.data.showResultsTab = true;
 			MapSettings.data.selectedTabIndex = myHomeTab;
+			visibilityUnregListener = $rootScope.$on('visibilityChanged', function(event, data) {
+				console.log('received visibilityChanged');
+				infoEventHandler();
+			});
 		}
 		
 		let clearInteraction = function() {
@@ -131,6 +135,9 @@ angular.module('MapToolsService')
 			MapSettings.data.theMap.un('singleclick', infoEventHandler);		
 			MapSettings.data.showResultsTab = false;
 			MapSettings.data.selectedTabIndex = 0; //Layers tab
+			
+			if (visibilityUnregListener !== null) visibilityUnregListener();
+			visibilityUnregListener = null;
 		}
 		
 		let layerClicked = function(index) {

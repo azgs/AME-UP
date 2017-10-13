@@ -1,0 +1,56 @@
+<md-dialog aria-label="searchDialog">
+
+	<!--
+	<md-toolbar class="md-dialog-toolbar">
+		<div class="md-toolbar-tools">
+			<h2 class="md-title ng-binding">Location Search</h2>
+		</div>
+	</md-toolbar>
+	-->
+	
+	<md-dialog-content  class="md-dialog-content">
+		<md-progress-circular ng-show="waiting" md-mode="indeterminate" style="margin-left: auto; margin-right: auto;"></md-progress-circular>
+		<div ng-show="!waiting" >
+			<div ng-show="!locationList">
+				<form name="searchForm" ng-submit="search()">
+					<md-input-container ng-show="!locationList">
+						<label>Address or place name</label>
+						<input type="text" name="searchLocation" ng-model="searchLocation" required ng-change="validateForm()" md-autofocus>
+						<div ng-messages="searchForm.searchLocation.$error">
+							<div ng-message="required">This is required</div>
+							<div ng-message="nothingFound">No such location found in Arizona</div>
+							<div ng-message="serverProblem">There is a problem with the geocode server. Please try later.</div>
+						</div>
+					</md-input-container>
+					<input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+				</form>
+			</div>
+			<div ng-show="locationList">
+				<md-input-container>
+					<div class="md-subhead" style="margin-bottom:1em">Multiple locations found</div>
+					<md-select ng-model="selectedLocationIdx" name="locationSelect" placeholder="Select a location" ng-change="locationSelected()">
+						<md-option ng-value="location" ng-repeat="location in locationList">{{ location.display_name }}</md-option>
+					</md-select>
+				</md-input-container>
+				<!--
+				<md-list  ng-show="locationList">
+					<md-list-item  ng-repeat="location in locationList">
+						<div ng-click="locationSelected()">{{ location.display_name }}</div>
+					</md-list-item>
+				</md-list>
+				-->
+
+			</div>
+		</div>
+	</md-dialog-content>
+	
+    <md-dialog-actions layout="row">
+		<md-button class="md-primary md-cancel-button md-button md-ink-ripple md-default-theme" ng-click="close()">
+			Cancel
+		</md-button>
+		<md-button  ng-show="!locationList" class="md-primary md-confirm-button md-button md-autofocus md-ink-ripple md-default-theme" ng-click="search()"  ng-disabled="!formValid">
+			Search
+		</md-button>
+    </md-dialog-actions>
+	
+</md-dialog>
