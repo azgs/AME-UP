@@ -1,38 +1,25 @@
 <div layout="row" flex style="height:100%;">
 
-	<md-content layout="column" flex="25" style="background-color: #86b8da;">
-		<a ui-sref="cover.info">
-			<md-button class="md-primary" aria-label="Info">
-				General Info
-			</md-button>
-		</a>
-		<a ui-sref="cover.additional">
-			<md-button class="md-primary" aria-label="Additional" >
-				Additional Resources
-			</md-button>
-		</a>
-	</md-content>
-	
 	<div flex="10"></div>
 	
-	<md-content flex="40" style="padding-right:30px; padding-top:20px;">
+	<md-content flex="65" style="padding-right:30px; padding-top:20px;">
 		<ui-view></ui-view>
 	</md-content>
 	
-	<div flex="5"></div>
+	<div flex="10"></div>
 	
 	<md-content flex="15" style=" height:100%">
 		<div ng-if="!isAuthenticated()">
 			<md-subheader layout-padding layout-align="top center" class="md-no-sticky" style="align: center; font-weight: bold; margin-bottom:0px; padding-bottom:0px">Map Login</md-subheader>
 			<login></login>
 		</div>
-		<div ng-if="isAuthenticated()" layout="column" layout-padding layout-align="top center" layout-fill style="margin-top:20px; min-height:500px">
+		<div ng-if="isAuthenticated()" layout="column" layout-padding layout-align="top center"  style="margin-top:20px; min-height:500px">
 			<md-whiteframe id="registration" class="md-whiteframe-12dp" style="padding: 1em 1em 1em 1em">
 				<a ui-sref="map"><md-button class="md-primary md-raised">Map</md-button></a>
 			</md-whiteframe>
 		</div>
 	</md-content>
 	
-	<div flex="5"></div>
+	<div flex="10"></div>
 
 </div>

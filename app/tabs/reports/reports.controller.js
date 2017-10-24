@@ -1,5 +1,7 @@
 angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMaterial', 'ngFileSaver', 'AuthService'])
 
+//TODO: This controller has grown out of control due to the piecemeal nature of Reports specifications. Some serious refactoring is warranted.
+
 .filter('filterAttributes', function() {
     return function(items, inclusionTest) {
         var filtered = {};
@@ -67,7 +69,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			$scope.featureCounter = {count:0}; //Used to index the feature records across featureTypes
 			
 			$scope.omitStandardFields = function(key) {
-				return (['Mil Zone ID', 'Restriction Type', 'Service', 'Description', 'Office', 'Contact'].indexOf(key) == -1)
+				return (['Mil Zone ID', 'Restriction Type', 'Service', 'Description', 'Office', 'Contact', 'likelihood'].indexOf(key) == -1)
 			}
 			
 			//console.log("project name = " + project.name);
@@ -83,6 +85,28 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			canvas.toBlob(function (blob) {
 				$scope.thumbURL = URL.createObjectURL(blob)
 				$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
+				$scope.results.$promise.then( () => {
+					console.log("post report processing");
+					//$scope.likelihood = "high"; //TODO: depends on Min Altitude and Project type
+					$scope.results.featureTypes.forEach(function(featureType) { //TODO: incorporate project type (height) into this logic
+						console.log("processing featureType");
+						if (featureType.featureType === "Military_flight_corridor_area" ||
+							featureType.featureType === "Mil_special_use_airspace_area") {
+							featureType.features.forEach(function(feature) {
+								console.log("processing feature");
+								if (feature['Minimum Altitude'] <= 1000) {
+									feature['likelihood'] = "high"
+								} else if (feature ['Minimum Altitude'] <= 2000) {
+									feature['likelihood'] = "medium";
+								} else if (feature ['Minimum Altitude'] > 2000) {
+									feature['likelihood'] = "low";
+								}
+								console.log("feature = "); console.log(feature);
+							});
+						}
+						console.log(featureType);
+					});
+				});
 				$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});		
 			})	
 			
@@ -351,6 +375,162 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 							});
 						}
 					});
+				} else if (reportName === "Permitting") {
+					let dateStr = new Date().toLocaleDateString();
+								
+					let docDef = {
+						pageOrientation: 'portrait',
+						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
+						content: [
+							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
+							{ text: ' ', fontSize: 22, bold:true },
+						]
+					};
+					
+					const element = document.getElementById('header');
+					element.scrollIntoView();
+					html2canvas(element, {
+						logging: true,
+						onrendered: function (headerCanvas) {	
+							console.log("header rendered");
+							const headerData = headerCanvas.toDataURL();
+							docDef.content.push({image: headerData, width: 520});
+							const element = document.getElementById('introText');
+							element.scrollIntoView();
+							html2canvas(element, {
+								logging: true,
+								onrendered: function (introCanvas) {	
+									console.log("intro rendered");
+									const introData = introCanvas.toDataURL();
+									docDef.content.push({image: introData, width: 520});
+									
+									const element = document.getElementById('fed-permitting');
+									element.scrollIntoView();
+									html2canvas(element, {
+										height:element.scrollHeight+120, //I dunno...just, I dunno
+										logging: true,
+										useCORS: true,
+										onrendered: function (fedIntroCanvas) {	
+											console.log("fed-permitting rendered");
+											const fedIntroData = fedIntroCanvas.toDataURL();
+											docDef.content.push({image: fedIntroData, width: 520});										
+											const element = document.getElementById('row-permitting');
+											element.scrollIntoView();
+											html2canvas(element, {
+												logging: true,
+												useCORS: true,
+												onrendered: function (rowCanvas) {	
+													console.log("row-permitting rendered");
+													const rowData = rowCanvas.toDataURL();
+													docDef.content.push({image: rowData, width: 520});
+													const element = document.getElementById('cec-permitting');
+													element.scrollIntoView();
+													html2canvas(element, {
+														logging: true,
+														useCORS: true,
+														onrendered: function (cecCanvas) {	
+															console.log("cec-permitting rendered");
+															const cecData = cecCanvas.toDataURL();
+															docDef.content.push({image: cecData, width: 520});							
+															const element = document.getElementById('footer');
+															element.scrollIntoView();
+															html2canvas(element, {
+																logging: true,
+																useCORS: true,
+																onrendered: function (footerCanvas) {	
+																	console.log("footer rendered");
+																	const footerData = footerCanvas.toDataURL();
+																	docDef.content.push({image: footerData, width: 520});
+																	pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
+																}
+															});
+														}
+													});
+												}
+											});																				
+										}
+									});
+								}
+							});
+						}
+					});
+				} else if (reportName === "Environmental") {				
+					let dateStr = new Date().toLocaleDateString();
+								
+					let docDef = {
+						pageOrientation: 'landscape',
+						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
+						content: [
+							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
+							{ text: ' ', fontSize: 22, bold:true },
+						]
+					};
+					
+					let doTheThing = function(x) {
+						const divID = "env_rec_" + x;
+						console.log("processing " + divID);
+						const element = document.getElementById(divID);
+						element.scrollIntoView();
+						html2canvas(element, {
+							logging: true,
+							background: '#ffffff',
+							onrendered: function (divCanvas) {
+								const divData = divCanvas.toDataURL();
+								docDef.content.push({image: divData, width: 740});
+								if (++x < $scope.results.impacts.length) { 
+									doTheThing(x);
+								} else {
+									const element = document.getElementById('endText');
+									element.scrollIntoView();
+									html2canvas(element, {
+										logging: true,
+										onrendered: function (endCanvas) {	
+											const endData = endCanvas.toDataURL();
+											docDef.content.push({image: endData, width: 740});
+											const element = document.getElementById('footer');
+											element.scrollIntoView();
+											html2canvas(element, {
+												logging: true,
+												useCORS: true,
+												onrendered: function (footerCanvas) {	
+													const footerData = footerCanvas.toDataURL();
+													docDef.content.push({image: footerData, width: 740});
+													pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
+												}
+											});
+										}
+									});
+									
+								}
+							}
+						});
+							
+					};					
+					
+					const element = document.getElementById('header');
+					element.scrollIntoView();
+					html2canvas(element, {
+						logging: true,
+						onrendered: function (headerCanvas) {	
+							const headerData = headerCanvas.toDataURL();
+							docDef.content.push({image: headerData, width: 740});
+							
+							const element = document.getElementById('introText');
+							element.scrollIntoView();
+							
+							html2canvas(element, {
+								logging: true,
+								onrendered: function (introCanvas) {	
+									const introData = introCanvas.toDataURL();
+									docDef.content.push({image: introData, width: 740});
+
+									let x = 0;
+									doTheThing(x);
+								}
+							});
+						}
+					});
+
 				} else { //TODO: Implement other reports
 					let dateStr = new Date().toLocaleDateString();
 								
@@ -394,7 +574,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 								}
 							});
 						}
-					});;
+					});
 					
 				}
 			}

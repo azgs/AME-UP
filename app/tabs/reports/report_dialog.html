@@ -117,7 +117,9 @@
 										<td>
 											<table  width="100%">
 												<tr>
-													<td><div ng-bind-html="feature['Description']"></div></td>
+													<td>
+														<div ng-include="'/tabs/reports/mePartials/description.html'"></div>
+													</td>
 												</tr>
 											</table>
 										</td>
@@ -140,8 +142,77 @@
 							</div>
 						</div>
 					</div>
+					<div ng-show="reportName === 'Permitting'">
+						<div id="fed-permitting" ng-show="results.fedOwners.length > 0" ng-include="'/tabs/reports/permittingPartials/fed.html'" style="padding-bottom:20px"></div>
+						<div id="row-permitting" ng-show="results.rowOwners.length > 0" ng-include="'/tabs/reports/permittingPartials/row.html'" style="padding-bottom:20px"></div>
+						<div id="cec-permitting" ng-show="results.cecOwners.length > 0" ng-include="'/tabs/reports/permittingPartials/cec.html'" style="padding-bottom:20px"></div>
+					</div>
+					<div ng-show="reportName === 'Environmental'">
+						<div ng-if="results.impacts.length === 0" class="md-title" id="env_rec_0">
+							No environmental impacts detected in your area of interest
+						</div>
+						<div ng-repeat="impact in results.impacts" id="env_rec_{{current+$index}}" style="padding-bottom:30px">
+							<table style="border:1px solid black;">
+								<tr>
+									<td>
+										<table ng-show="impact.spcode" width="100%" style="border:1px solid black;border-collapse: collapse;">
+											<tr>
+												<th style="border:1px solid black;border-collapse: collapse;">Species Code</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Regulation</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Status</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Taxon</th>
+											</tr>
+											<tr>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.spcode}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.regulation}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.listing_st}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.sciname}}</td>
+											</tr>
+										</table>
+										<table ng-show="impact.ACEC_ID" width="100%" style="border:1px solid black;border-collapse: collapse;">
+											<tr>
+												<th style="border:1px solid black;border-collapse: collapse;">ACEC ID</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Regulation</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Name</th>
+											</tr>
+											<tr>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.ACEC_ID}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.regulation}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.ACEC_NAME}}</td>
+											</tr>
+										</table>
+									</td>
+								</tr>								
+								<tr>
+									<td>
+										<table  width="100%">
+											<tr>
+												<td><div ng-bind-html="impact.description"></div></td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<table  width="100%"  style="border:1px solid black;border-collapse: collapse;">
+											<tr>
+												<th style="border:1px solid black;border-collapse: collapse;">Office</th>
+												<th style="border:1px solid black;border-collapse: collapse;">Contact</th>
+											</tr>
+											<tr>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.office}}</td>
+												<td style="border:1px solid black;border-collapse: collapse;">{{impact.contact}}</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
 
-					<div id="endText" ng-show="results.textBoxContent[1]" ng-bind-html="results.textBoxContent[1]" class="md-body-1" style="padding-top:20px;">
+					<div id="endText" ng-if="results.textBoxContent[1]" ng-bind-html="results.textBoxContent[1]" class="md-body-1" style="padding-top:20px;">
+					</div>
+					<div id="endText" ng-if="!results.textBoxContent[1]" class="md-body-1" style="padding-top:20px;">
 					</div>
 					<div id="footer" style="padding-top:30px">
 						<div class="md-body-1"><b>Report area:</b></div>

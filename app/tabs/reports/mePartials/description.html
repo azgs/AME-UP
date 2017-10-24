@@ -1,0 +1,7 @@
+<div ng-show="feature['Minimum Altitude'] !== undefined && feature['Minimum Altitude'] !== null">
+Some or all of this land sits below <b>{{feature['Restriction Type']}}</b> with a <b>{{feature['Minimum Altitude']}}-foot floor</b>, meaning that the military has historically engaged in airborne activities as low as <b>{{feature['Minimum Altitude']}}</b> feet above the land’s surface. Based on this history of use, there would be a <b>{{feature['likelihood']}} likelihood of conflict</b> between existing military activities and the proposed project.
+</div>
+
+<div ng-show="feature['Minimum Altitude'] === undefined || feature['Minimum Altitude'] === null">
+[WAITING FOR CONTENT]
+</div>

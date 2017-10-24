@@ -1,0 +1,13 @@
+<div style="border-style: solid;border-width:2px; padding:10px">
+	Some or all of this land is administered by the 
+	<span ng-repeat="owner in results.rowOwners"><span ng-show="$index > 0 && $index === (results.rowOwners.length-1)">and </span>{{owner}}, </span>
+	and therefore all associated electric utility infrastructure is required to obtain a right-of- way (ROW)
+	easement:
+	<ul>
+		<li ng-show="results.rowOwners.includes('Bureau of Land Management')">For more information about obtaining a ROW on lands administered by the BLM, please see: <a href="https://www.blm.gov/programs/lands-and-realty/right-of-way/obtaining-right-of-way">https://www.blm.gov/programs/lands-and-realty/right-of-way/obtaining-right-of-way</a></li>
+		<li ng-show="results.rowOwners.includes('U.S. Forest Service')">For more information about obtaining a ROW on lands administered by the USFS, please see <a href="https://www.fs.fed.us/dirindexhome/field/r3/fsm/2700/2730.doc">https://www.fs.fed.us/dirindexhome/field/r3/fsm/2700/2730.doc</a></li>
+		<li ng-show="results.rowOwners.includes('Bureau of Indian Affairs')">For more information about obtaining a ROW on Tribal lands or lands administered by the BIA, please see <a href="https://www.bia.gov/as-ia/raca/rights-way-25-cfr-169">https://www.bia.gov/as-ia/raca/rights-way-25-cfr-169</a></li>
+		<li ng-show="results.rowOwners.includes('State') || results.rowOwners.includes('State Wildlife Area') || results.rowOwners.includes('Local or State Parks')">For more information about obtaining a ROW on lands administered by the Arizona State Land Department, please see: <a href="https://land.az.gov/applications-and-permits">https://land.az.gov/applications-and-permits</a></li>
+		<li ng-show="results.rowOwners.includes('Local or State Parks') || results.rowOwners.includes('County')">For more information about obtaining a ROW on lands administered by counties or cities, please contact the appropriate county and/or city planning department.</li>
+	</ul>
+</div>

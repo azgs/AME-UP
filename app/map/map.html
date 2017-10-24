@@ -142,12 +142,14 @@
 										</md-tooltip>
 										Permitting
 									</md-button>
+									<!--
 									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Infrastructure')">
 										<md-tooltip md-direction="right" md-autohide="true">
 											Generate a list of infrastructure concerns in your Area of Interest.
 										</md-tooltip>
 										Infrastructure
 									</md-button>
+									-->
 									<md-button class="md-raised" style="text-align:left" ng-click="reportClicked($event, 'Environmental')">
 										<md-tooltip md-direction="right" md-autohide="true">
 											Generate a list of environmental concerns in your Area of Interest.
@@ -180,7 +182,7 @@
 							</md-tab-body>
 						</div>
 						</md-tab>
-						<md-tab ng-if="data.showResultsTab" label="Results">
+						<md-tab ng-if="data.showResultsTab" label="Info">
 						<div ng-controller="ResultsTabController" style="height:100%">
 							<md-tab-body>
 								<div layout-padding ng-if="!data.result && !data.showProgressSpinner" class="md-headline" style="opacity:0.7;margin-top:100px;text-align: center;">
