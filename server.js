@@ -1,7 +1,28 @@
-var express = require('express');
-var app = express();
-var request = require('request');
+const express = require('express');
+const app = express();
+const request = require('request');
 require('ssl-root-cas').addFile('SymantecClass3SecureServerCA-G4-bogi.txt').inject();
+
+const logger = require('morgan');
+const fs = require('fs');
+const path = require('path')
+const rfs = require('rotating-file-stream')
+
+const url = require('url');
+const logDirectory = path.join(__dirname, 'log');
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
+const accessLogStream = rfs('access.log', {
+    interval: '1d', // rotate daily
+    path: logDirectory
+});
+app.use(logger('common', {
+	stream: accessLogStream, 
+	skip: function (req, res) {
+		//return req.url.includes("bower_components"); 
+		const path = url.parse(req.url).pathname;
+		return path !== '/';
+	}
+}));
 
 app.use('/', express.static(__dirname + '/app'));
 

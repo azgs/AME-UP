@@ -77,27 +77,29 @@ angular.module('MapToolsService')
 				selectPoint = event.coordinate;
 			}
 			console.log("selectPoint = "); console.log(selectPoint);
-			markers.clear();
-			markers.push(new ol.Feature({geometry: new ol.geom.Point(selectPoint)}));
-			if (data.active) {
-				data.result = null;
-				data.showProgressSpinner = true;
-				data.selectedIndex = -1;
-				data.features = null;
-				data.keys = null;
-				data.valuesList = null;
-				if (event) { //This chokes if we are updating due to a layer visibility change
-					$rootScope.$apply();
-				}
-				getLayersAtCoord(selectPoint).then(function(result) { 
-					console.log("Done!");console.log(result)
-					if (result) {
-						data.showProgressSpinner = false;
-						data.result = result;
+			if (selectPoint !== null) {
+				markers.clear();
+				markers.push(new ol.Feature({geometry: new ol.geom.Point(selectPoint)}));
+				if (data.active) {
+					data.result = null;
+					data.showProgressSpinner = true;
+					data.selectedIndex = -1;
+					data.features = null;
+					data.keys = null;
+					data.valuesList = null;
+					if (event) { //This chokes if we are updating due to a layer visibility change
+						$rootScope.$apply();
 					}
-				});
-				
-			}				
+					getLayersAtCoord(selectPoint).then(function(result) { 
+						console.log("Done!");console.log(result)
+						if (result) {
+							data.showProgressSpinner = false;
+							data.result = result;
+						}
+					});
+					
+				}		
+			}
 		}		
 		
 		let addInteraction = function() {

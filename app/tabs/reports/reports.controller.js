@@ -86,26 +86,28 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 				$scope.thumbURL = URL.createObjectURL(blob)
 				$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
 				$scope.results.$promise.then( () => {
-					console.log("post report processing");
-					//$scope.likelihood = "high"; //TODO: depends on Min Altitude and Project type
-					$scope.results.featureTypes.forEach(function(featureType) { //TODO: incorporate project type (height) into this logic
-						console.log("processing featureType");
-						if (featureType.featureType === "Military_flight_corridor_area" ||
-							featureType.featureType === "Mil_special_use_airspace_area") {
-							featureType.features.forEach(function(feature) {
-								console.log("processing feature");
-								if (feature['Minimum Altitude'] <= 1000) {
-									feature['likelihood'] = "high"
-								} else if (feature ['Minimum Altitude'] <= 2000) {
-									feature['likelihood'] = "medium";
-								} else if (feature ['Minimum Altitude'] > 2000) {
-									feature['likelihood'] = "low";
-								}
-								console.log("feature = "); console.log(feature);
-							});
-						}
-						console.log(featureType);
-					});
+					if (reportName === 'Military Encroachment') {
+						console.log("post report processing");
+						//$scope.likelihood = "high"; //TODO: depends on Min Altitude and Project type
+						$scope.results.featureTypes.forEach(function(featureType) { //TODO: incorporate project type (height) into this logic
+							console.log("processing featureType");
+							if (featureType.featureType === "Military_flight_corridor_area" ||
+								featureType.featureType === "Mil_special_use_airspace_area") {
+								featureType.features.forEach(function(feature) {
+									console.log("processing feature");
+									if (feature['Minimum Altitude'] <= 1000) {
+										feature['likelihood'] = "high"
+									} else if (feature ['Minimum Altitude'] <= 2000) {
+										feature['likelihood'] = "medium";
+									} else if (feature ['Minimum Altitude'] > 2000) {
+										feature['likelihood'] = "low";
+									}
+									console.log("feature = "); console.log(feature);
+								});
+							}
+							console.log(featureType);
+						});
+					}
 				});
 				$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});		
 			})	
@@ -146,192 +148,163 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			
 			$scope.pdfDownloadClicked = function() {
 				console.log("pdfDownloadClicked, " + reportName);
-
-				if (reportName === "Contact") {
-					html2canvas(document.getElementById('introText'), {
-						onrendered: function (canvas) {
-							let data = canvas.toDataURL();
+				
+				let dateStr = new Date().toLocaleDateString();
 							
-							//let dateStr = new Date().toLocaleDateString();
-							let dateStr = $scope.date.toLocaleDateString();
-							
-							let docDef = {
-								pageOrientation: 'landscape',
-								footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-								content: [
-									{ text: 'Contact Report ' + dateStr, fontSize: 22, bold:true },
-									{image: data, width: 740},
-									{table: {
-										headerRows: 1,
-										dontBreakRows: true,
-										body: [
-											[
-												{text: 'First Name', bold:true}, 
-												{text: 'Last Name', bold:true},
-												{text: 'Title', bold:true},
-												{text: 'Department', bold:true},
-												{text: 'Agency Name', bold:true}, 
-												{text: 'Agency Type', bold:true},
-												{text: 'Phone', bold:true}, 
-												{text: 'Email', bold:true},
-												{text: 'Address', bold:true}
-											]
-										],
-										fontSize: 10
-									}}
-								]
-							}
-
-							//for (contact in $scope.results.records) {
-							$scope.results.records.forEach(function(contact) {
-								docDef.content[2].table.body.push([contact.first_name, contact.last_name, contact.position_title, contact.department, contact.agency_name, contact.agency_type, contact.phone, contact.email,  contact.street + ", " +contact.city + ", "  + contact.state + ", " + contact.zip_code]);
-							});
-
-							
-							pdfMake.createPdf(docDef).download("ContactReport - " + dateStr + ".pdf");
-							
-						}
-					});		
-				} else if (reportName === "Military Encroachment") {
-					/*********************
-					//This version builds tables in pdfMake. Has trouble rendering xml and splitting fancy tables
-					document.getElementById('introText').scrollIntoView();
-					html2canvas(document.getElementById('introText'), {
-						logging: true,
-						onrendered: function (introCanvas) {
-							document.getElementById('endText').scrollIntoView();
-							html2canvas(document.getElementById('endText'), {
-								logging: true,
-								onrendered: function (endCanvas) {	
-									let introData = introCanvas.toDataURL();
-									console.log("introData = "); console.log(introData);
-									console.log("introCanvas = "); console.log(introCanvas);
-									let endData = endCanvas.toDataURL();
-									console.log("endData = "); console.log(endData);
-									console.log("endCanvas = "); console.log(endCanvas);
-									
-									let dateStr = new Date().toLocaleDateString();
-
-									let docDef = {
-										pageOrientation: 'landscape',
-										footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-										content: [
-											{ text: 'Military Encroachment Report ' + dateStr, fontSize: 22, bold:true },
-											{image: introData, width: 740}
+				let docDef = {
+					pageOrientation: 'landscape',
+					footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
+					content: [
+						{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
+						{ text: ' ', fontSize: 22, bold:true },
+					]
+				};
+				
+				const getGuts = function() {
+					return $q(function(resolve, reject) {
+						let guts = [];
+						if (reportName === "Contact") {
+							guts.push(
+								{table: {
+									headerRows: 1,
+									dontBreakRows: true,
+									body: [
+										[
+											{text: 'First Name', bold:true}, 
+											{text: 'Last Name', bold:true},
+											{text: 'Title', bold:true},
+											{text: 'Department', bold:true},
+											{text: 'Agency Name', bold:true}, 
+											{text: 'Agency Type', bold:true},
+											{text: 'Phone', bold:true}, 
+											{text: 'Email', bold:true},
+											{text: 'Address', bold:true}
 										]
-									};
-									
-									$scope.results.records.forEach(function(r) {
-										let table = {
-											table: {
-												dontBreakRows: true,
-												body: [
-													[
-														{
-															table: {
-																widths: ['*','*','*','*'],
-																headerRows: 1,
-																dontBreakRows: true,
-																body: [
-																	[
-																		{text: 'Mil Zone ID', bold:true}, 
-																		{text: 'Restriction Type', bold:true},
-																		{text: 'Service', bold:true},
-																		{text: 'Minimum Altitude', bold:true}
-																	],
-																	[
-																		r.military_zone_id, 
-																		r.restriction_type, 
-																		r.service, 
-																		r.minimum_altitude
-																	]
-																]
-															}
-														}
-													],
-													[
-														[
-															{
-																table: {
-																	headerRows: 0,
-																	dontBreakRows: true,
-																	body: [
-																		[
-																			r.comment
-																		]
-																	]
-																}
-															}
-														]
-													],
-													[
-														{
-															table: {
-																widths: ['auto','*'],
-																headerRows: 1,
-																dontBreakRows: true,
-																body: [
-																	[
-																		{text: 'Office', bold:true}, 
-																		{text: 'Contact', bold:true}
-																	],
-																	[
-																		r.office,
-																		r.contact_name,// + ", " +r.contact_email + ", "  + r.contact_phone
-																	]
-																]
-															}
-														}
-													]
-												]
-											}	
+									],
+									fontSize: 10
+								}}
+							);
+
+							$scope.results.records.forEach(function(contact) {
+								guts[0].table.body.push([contact.first_name, contact.last_name, contact.position_title, contact.department, contact.agency_name, contact.agency_type, contact.phone, contact.email,  contact.street + ", " +contact.city + ", "  + contact.state + ", " + contact.zip_code]);
+							});			
+							resolve(guts);
+						} else if (reportName === "Military Encroachment") {					
+							let doTheThing = function(x) {
+								console.log("feature couter = " + $scope.featureCounter.count);
+								const divID = "me_rec_" + x;
+								console.log("processing " + divID);
+								const element = document.getElementById(divID);
+								element.scrollIntoView();
+								html2canvas(element, {
+									logging: true,
+									background: '#ffffff',
+									onrendered: function (divCanvas) {
+										const divData = divCanvas.toDataURL();
+										guts.push({image: divData, width: 740});
+										if (++x < $scope.featureCounter.count) { 
+											doTheThing(x);
+										} else {
+											resolve(guts);
 										}
-												
-										docDef.content.push(table);
-										docDef.content.push({text:' ', marginTop: 15});
-									});
-									pdfMake.createPdf(docDef).download("MilitaryEncroachmentReport - " + dateStr + ".pdf");
+									}
+								});
+								
+							};					
+						
+							let x = 0;
+							doTheThing(x);
+						} else if (reportName === "Permitting") {				
+							docDef.pageOrientation = 'portrait';
+							const element = document.getElementById('fed-permitting');
+							element.scrollIntoView();
+							html2canvas(element, {
+								height:element.scrollHeight+120, //I dunno...just, I dunno
+								logging: true,
+								useCORS: true,
+								onrendered: function (fedIntroCanvas) {	
+									console.log("fed-permitting rendered");
+									const fedIntroData = fedIntroCanvas.toDataURL();
+									guts.push({image: fedIntroData, width: 520});										
+									const element = document.getElementById('row-permitting');
+									element.scrollIntoView();
+									html2canvas(element, {
+										logging: true,
+										useCORS: true,
+										onrendered: function (rowCanvas) {	
+											console.log("row-permitting rendered");
+											const rowData = rowCanvas.toDataURL();
+											guts.push({image: rowData, width: 520});
+											const element = document.getElementById('cec-permitting');
+											element.scrollIntoView();
+											html2canvas(element, {
+												logging: true,
+												useCORS: true,
+												onrendered: function (cecCanvas) {	
+													console.log("cec-permitting rendered");
+													const cecData = cecCanvas.toDataURL();
+													guts.push({image: cecData, width: 520});		
+													resolve(guts);
+												}
+											});
+										}
+									});																				
 								}
 							});
+						} else if (reportName === "Environmental") {											
+							let doTheThing = function(x) {
+								const divID = "env_rec_" + x;
+								console.log("processing " + divID);
+								const element = document.getElementById(divID);
+								element.scrollIntoView();
+								html2canvas(element, {
+									logging: true,
+									background: '#ffffff',
+									onrendered: function (divCanvas) {
+										const divData = divCanvas.toDataURL();
+										guts.push({image: divData, width: 740});
+										if (++x < $scope.results.impacts.length) { 
+											doTheThing(x);
+										} else {
+											resolve(guts);
+										}
+									}
+								});		
+							};					
+							
+							let x = 0;
+							doTheThing(x);
+
+						} else {
+							reject([{text: 'Invalid report type'}]);
 						}
-					});	
-					**************/
-								
-									
-			
-					let dateStr = new Date().toLocaleDateString();
-								
-					let docDef = {
-						pageOrientation: 'landscape',
-						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-						content: [
-							{ text: 'Military Encroachment Report ' + dateStr, fontSize: 22, bold:true },
-							{ text: ' ', fontSize: 22, bold:true },
-						]
-					};
-					
-					let doTheThing = function(x) {
-						console.log("feature couter = " + $scope.featureCounter.count);
-						const divID = "me_rec_" + x;
-						console.log("processing " + divID);
-						const element = document.getElementById(divID);
-						element.scrollIntoView();
+					});
+				};
+				
+				const element = document.getElementById('header');
+				element.scrollIntoView();
+				html2canvas(element, {
+					logging: true,
+					onrendered: function (headerCanvas) {	
+						const headerData = headerCanvas.toDataURL();
+						
+						const element = document.getElementById('introText');
+						element.scrollIntoView();	
 						html2canvas(element, {
 							logging: true,
-							background: '#ffffff',
-							onrendered: function (divCanvas) {
-								const divData = divCanvas.toDataURL();
-								docDef.content.push({image: divData, width: 740});
-								if (++x < $scope.featureCounter.count) { 
-									doTheThing(x);
-								} else {
+							onrendered: function (introCanvas) {	
+								const introData = introCanvas.toDataURL();
+								getGuts().then(function(guts) {
+									const imageWidth = docDef.pageOrientation === 'landscape' ? 740 : 520;
+									docDef.content.push({image: headerData, width: imageWidth});
+									docDef.content.push({image: introData, width: imageWidth});
+									docDef.content = docDef.content.concat(guts);
 									const element = document.getElementById('endText');
 									element.scrollIntoView();
 									html2canvas(element, {
 										logging: true,
 										onrendered: function (endCanvas) {	
 											const endData = endCanvas.toDataURL();
-											docDef.content.push({image: endData, width: 740});
 											const element = document.getElementById('footer');
 											element.scrollIntoView();
 											html2canvas(element, {
@@ -339,244 +312,18 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 												useCORS: true,
 												onrendered: function (footerCanvas) {	
 													const footerData = footerCanvas.toDataURL();
-													docDef.content.push({image: footerData, width: 740});
-													pdfMake.createPdf(docDef).download("MilitaryEncroachmentReport - " + dateStr + ".pdf");
+													docDef.content.push({image: endData, width: imageWidth});
+													docDef.content.push({image: footerData, width: imageWidth});
+													pdfMake.createPdf(docDef).download(reportName + " Report - " + dateStr + ".pdf");
 												}
 											});
 										}
 									});
-									
-								}
+								});
 							}
 						});
-							
-					};					
-					
-					const element = document.getElementById('header');
-					element.scrollIntoView();
-					html2canvas(element, {
-						logging: true,
-						onrendered: function (headerCanvas) {	
-							const headerData = headerCanvas.toDataURL();
-							docDef.content.push({image: headerData, width: 740});
-							
-							const element = document.getElementById('introText');
-							element.scrollIntoView();
-							
-							html2canvas(element, {
-								logging: true,
-								onrendered: function (introCanvas) {	
-									const introData = introCanvas.toDataURL();
-									docDef.content.push({image: introData, width: 740});
-
-									let x = 0;
-									doTheThing(x);
-								}
-							});
-						}
-					});
-				} else if (reportName === "Permitting") {
-					let dateStr = new Date().toLocaleDateString();
-								
-					let docDef = {
-						pageOrientation: 'portrait',
-						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-						content: [
-							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
-							{ text: ' ', fontSize: 22, bold:true },
-						]
-					};
-					
-					const element = document.getElementById('header');
-					element.scrollIntoView();
-					html2canvas(element, {
-						logging: true,
-						onrendered: function (headerCanvas) {	
-							console.log("header rendered");
-							const headerData = headerCanvas.toDataURL();
-							docDef.content.push({image: headerData, width: 520});
-							const element = document.getElementById('introText');
-							element.scrollIntoView();
-							html2canvas(element, {
-								logging: true,
-								onrendered: function (introCanvas) {	
-									console.log("intro rendered");
-									const introData = introCanvas.toDataURL();
-									docDef.content.push({image: introData, width: 520});
-									
-									const element = document.getElementById('fed-permitting');
-									element.scrollIntoView();
-									html2canvas(element, {
-										height:element.scrollHeight+120, //I dunno...just, I dunno
-										logging: true,
-										useCORS: true,
-										onrendered: function (fedIntroCanvas) {	
-											console.log("fed-permitting rendered");
-											const fedIntroData = fedIntroCanvas.toDataURL();
-											docDef.content.push({image: fedIntroData, width: 520});										
-											const element = document.getElementById('row-permitting');
-											element.scrollIntoView();
-											html2canvas(element, {
-												logging: true,
-												useCORS: true,
-												onrendered: function (rowCanvas) {	
-													console.log("row-permitting rendered");
-													const rowData = rowCanvas.toDataURL();
-													docDef.content.push({image: rowData, width: 520});
-													const element = document.getElementById('cec-permitting');
-													element.scrollIntoView();
-													html2canvas(element, {
-														logging: true,
-														useCORS: true,
-														onrendered: function (cecCanvas) {	
-															console.log("cec-permitting rendered");
-															const cecData = cecCanvas.toDataURL();
-															docDef.content.push({image: cecData, width: 520});							
-															const element = document.getElementById('footer');
-															element.scrollIntoView();
-															html2canvas(element, {
-																logging: true,
-																useCORS: true,
-																onrendered: function (footerCanvas) {	
-																	console.log("footer rendered");
-																	const footerData = footerCanvas.toDataURL();
-																	docDef.content.push({image: footerData, width: 520});
-																	pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
-																}
-															});
-														}
-													});
-												}
-											});																				
-										}
-									});
-								}
-							});
-						}
-					});
-				} else if (reportName === "Environmental") {				
-					let dateStr = new Date().toLocaleDateString();
-								
-					let docDef = {
-						pageOrientation: 'landscape',
-						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-						content: [
-							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
-							{ text: ' ', fontSize: 22, bold:true },
-						]
-					};
-					
-					let doTheThing = function(x) {
-						const divID = "env_rec_" + x;
-						console.log("processing " + divID);
-						const element = document.getElementById(divID);
-						element.scrollIntoView();
-						html2canvas(element, {
-							logging: true,
-							background: '#ffffff',
-							onrendered: function (divCanvas) {
-								const divData = divCanvas.toDataURL();
-								docDef.content.push({image: divData, width: 740});
-								if (++x < $scope.results.impacts.length) { 
-									doTheThing(x);
-								} else {
-									const element = document.getElementById('endText');
-									element.scrollIntoView();
-									html2canvas(element, {
-										logging: true,
-										onrendered: function (endCanvas) {	
-											const endData = endCanvas.toDataURL();
-											docDef.content.push({image: endData, width: 740});
-											const element = document.getElementById('footer');
-											element.scrollIntoView();
-											html2canvas(element, {
-												logging: true,
-												useCORS: true,
-												onrendered: function (footerCanvas) {	
-													const footerData = footerCanvas.toDataURL();
-													docDef.content.push({image: footerData, width: 740});
-													pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
-												}
-											});
-										}
-									});
-									
-								}
-							}
-						});
-							
-					};					
-					
-					const element = document.getElementById('header');
-					element.scrollIntoView();
-					html2canvas(element, {
-						logging: true,
-						onrendered: function (headerCanvas) {	
-							const headerData = headerCanvas.toDataURL();
-							docDef.content.push({image: headerData, width: 740});
-							
-							const element = document.getElementById('introText');
-							element.scrollIntoView();
-							
-							html2canvas(element, {
-								logging: true,
-								onrendered: function (introCanvas) {	
-									const introData = introCanvas.toDataURL();
-									docDef.content.push({image: introData, width: 740});
-
-									let x = 0;
-									doTheThing(x);
-								}
-							});
-						}
-					});
-
-				} else { //TODO: Implement other reports
-					let dateStr = new Date().toLocaleDateString();
-								
-					let docDef = {
-						pageOrientation: 'landscape',
-						footer: function(currentPage, pageCount) { return { text: currentPage.toString() + ' of ' + pageCount, alignment: 'right', margin: [20, 2] }; },
-						content: [
-							{ text: reportName + ' Report ' + dateStr, fontSize: 22, bold:true },
-							{ text: ' ', fontSize: 22, bold:true },
-						]
-					};
-					
-					const element = document.getElementById('header');
-					element.scrollIntoView();
-					html2canvas(element, {
-						logging: true,
-						onrendered: function (headerCanvas) {	
-							console.log("header rendered");
-							const headerData = headerCanvas.toDataURL();
-							docDef.content.push({image: headerData, width: 740});
-							const element = document.getElementById('introText');
-							element.scrollIntoView();
-							html2canvas(element, {
-								logging: true,
-								onrendered: function (introCanvas) {	
-									console.log("intro rendered");
-									const introData = introCanvas.toDataURL();
-									docDef.content.push({image: introData, width: 740});
-									const element = document.getElementById('footer');
-									element.scrollIntoView();
-									html2canvas(element, {
-										logging: true,
-										useCORS: true,
-										onrendered: function (footerCanvas) {	
-											console.log("footer rendered");
-											const footerData = footerCanvas.toDataURL();
-											docDef.content.push({image: footerData, width: 740});
-											pdfMake.createPdf(docDef).download(reportName + "Report - " + dateStr + ".pdf");
-										}
-									});
-								}
-							});
-						}
-					});
-					
-				}
+					}
+				});
 			}
 		}
 
