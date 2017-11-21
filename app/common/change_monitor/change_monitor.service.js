@@ -97,7 +97,11 @@ angular.module('ChangeMonitorService', ['SettingsService'])
 					if (ProjectSettings.data.currentProject) {
 						//There's a flakey circular reference problem that sometimes crops up with the aoi field. To get around it,
 						//I'm doing this conversion to GeoJSON upstream of the compare. I know it's a hack.
-						let aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(ProjectSettings.data.currentProject.aoi);
+						//let aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(ProjectSettings.data.currentProject.aoi);
+						let aoiGeoJSON;
+						if (ProjectSettings.data.currentProject.aoi) {
+							aoiGeoJSON = new ol.format.GeoJSON().writeGeometry(ProjectSettings.data.currentProject.aoi);
+						}
 						//console.log("aoiGeoJSON = "); console.log(aoiGeoJSON);
 						return {
 							name: ProjectSettings.data.currentProject.name,

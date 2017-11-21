@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('MapToolsService')
-	.factory('OtherInfoTool', function($rootScope, $mdDialog, $q, MapSettings, LayersTabSettings) {
+	.factory('OtherInfoTool', function($rootScope, $mdDialog, $q, MapSettings, LayersTabSettings, WFSProxy) {
 		console.log("OtherInfoTool init enter");
 
 		let data = {
@@ -269,20 +269,13 @@ angular.module('MapToolsService')
 						featureRequest = featureRequest.hasChildNodes() ? featureRequest : undefined;
 									
 						if (featureRequest != undefined && featureSource.layers[0].source.wfs.url != undefined) {
-							try {
-								//Try fetch first (not available in IE)
-								//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
-								fetch('/proxy/' + featureSource.layers[0].source.wfs.url, {
-									method: 'POST',
-									body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
-									//body: queryString //For use with the xml hack above
-								}).then(function(response) {
-									console.log(response);
-									return response.json();
-								}).then(function(result) {
-									console.log(result);
-									if (result.features.length > 0) {
-										featureSource.layers = processWFSResult(result, featureSource); 
+							//TODO: if url is ameup geoserver, change to server api url (could possibly be done in proxy)
+							if (featureSource.layers[0].source.wfs.url.includes('http://ameup.usgin.org:8080/geoserver/wfs')) {
+								let wfsResults = WFSProxy.xmlQuery({xmlBody: new XMLSerializer().serializeToString(featureRequest)});
+								wfsResults.$promise.then( function() {
+									console.log("wfsResults = ");console.log(wfsResults);
+									if (wfsResults.features.length > 0) {
+										featureSource.layers = processWFSResult(wfsResults, featureSource); 
 									} else {
 										featureSource.layers = null;
 									}
@@ -290,26 +283,50 @@ angular.module('MapToolsService')
 								}).catch(function(err) {
 									featureSource.layers = null;
 									resolve();
-								})
-							} catch(err) { //If fetch is not available, this is IE
-								let request = new XMLHttpRequest();
-								request.onload = function() {
-									let result = JSON.parse(this.responseText);
-									console.log(result);
-									if (result.features.length > 0) {
-										featureSource.layers = processWFSResult(result, featureSource);
-									} else {
+								});
+							} else {
+								try {
+									//Try fetch first (not available in IE)
+									//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
+									fetch('/proxy/' + featureSource.layers[0].source.wfs.url, {
+										method: 'POST',
+										body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
+										//body: queryString //For use with the xml hack above
+									}).then(function(response) {
+										console.log(response);
+										return response.json();
+									}).then(function(result) {
+										console.log(result);
+										if (result.features.length > 0) {
+											featureSource.layers = processWFSResult(result, featureSource); 
+										} else {
+											featureSource.layers = null;
+										}
+										resolve();
+									}).catch(function(err) {
 										featureSource.layers = null;
-									}	
-									resolve();
-								};
-								request.onerror = function(err) {
-									console.log("server problem:"); console.log(err);
-									featureSource.layers = null;
-									resolve();
-								};
-								request.open('POST', '/proxy/' + layer.source.wfs.url, true);
-								request.send(new XMLSerializer().serializeToString(featureRequest));
+										resolve();
+									})
+								} catch(err) { //If fetch is not available, this is IE
+									let request = new XMLHttpRequest();
+									request.onload = function() {
+										let result = JSON.parse(this.responseText);
+										console.log(result);
+										if (result.features.length > 0) {
+											featureSource.layers = processWFSResult(result, featureSource);
+										} else {
+											featureSource.layers = null;
+										}	
+										resolve();
+									};
+									request.onerror = function(err) {
+										console.log("server problem:"); console.log(err);
+										featureSource.layers = null;
+										resolve();
+									};
+									request.open('POST', '/proxy/' + layer.source.wfs.url, true);
+									request.send(new XMLSerializer().serializeToString(featureRequest));
+								}
 							}
 						
 						}

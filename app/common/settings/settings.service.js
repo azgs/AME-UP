@@ -372,7 +372,8 @@ angular.module('SettingsService', ['APIService'])
 		
 		return {
 			data: data,
-			setCurrentProject: setCurrentProject
+			setCurrentProject: setCurrentProject,
+			fetchProjects: fetchProjects
 		}
 		
 		

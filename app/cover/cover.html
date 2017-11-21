@@ -2,15 +2,13 @@
 
 	<div flex="10"></div>
 	
-	<md-content flex="65" style="padding-right:30px; padding-top:20px;">
+	<md-content flex="40" style="padding-right:30px; padding-top:20px;">
 		<ui-view></ui-view>
 	</md-content>
 	
-	<div flex="10"></div>
-	
-	<md-content flex="15" style=" height:100%">
+	<md-content flex="40" style=" height:100%; padding-top:20px;">
 		<div ng-if="!isAuthenticated()">
-			<md-subheader layout-padding layout-align="top center" class="md-no-sticky" style="align: center; font-weight: bold; margin-bottom:0px; padding-bottom:0px">Map Login</md-subheader>
+			<!--<md-subheader layout-padding layout-align="top center" class="md-no-sticky" style="align: center; font-weight: bold; margin-bottom:0px; padding-bottom:0px">Map Login</md-subheader>-->
 			<login></login>
 		</div>
 		<div ng-if="isAuthenticated()" layout="column" layout-padding layout-align="top center"  style="margin-top:20px; min-height:500px">

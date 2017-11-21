@@ -9,12 +9,12 @@ angular.module('APIService', ['ngResource'])
 			query: {
 				method: 'GET',
 				isArray: true,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			get: {
 				method: 'GET',
 				isArray: false,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			}
 		});
 	})
@@ -24,12 +24,12 @@ angular.module('APIService', ['ngResource'])
 			query: {
 				method: 'GET',
 				isArray: true,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			get: {
 				method: 'GET',
 				isArray: false,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			}
 		});
 	})
@@ -47,7 +47,7 @@ angular.module('APIService', ['ngResource'])
 			get: {
 				method: 'GET',
 				isArray: false,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			}
 		});
 		
@@ -107,7 +107,7 @@ angular.module('APIService', ['ngResource'])
 			query: {
 				method: 'GET',
 				isArray: true,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			/**
 			get: {
@@ -117,15 +117,15 @@ angular.module('APIService', ['ngResource'])
 			**/
 			create: {
 				method: 'POST',
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			update: {
 				method: 'PUT',
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			delete: {
 				method: 'DELETE',
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			}
 			
 		});
@@ -135,7 +135,7 @@ angular.module('APIService', ['ngResource'])
 			query: {
 				method: 'GET',
 				isArray: true,
-				headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
+				//headers: { 'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey) } 
 			},
 			/**
 			get: {
@@ -144,7 +144,33 @@ angular.module('APIService', ['ngResource'])
 			}
 			**/			
 		});
+	})	
+	.factory('WFSProxy', function($resource, APP_CONFIG) {
+		return $resource(APP_CONFIG.layersAPI + '/wfs_proxy', {}, {
+			xmlQuery: {
+				method: 'POST',
+				isArray: false,
+				//headers: { 
+				//	'Authorization': 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey)
+				//} 
+			}
+		});
 	})
+	// Injects an HTTP interceptor that injects an authorization header for calls on the API
+	// This is needed because the factories above are initialized once at start up and the auth token is not available if the user has not logged in.
+	.factory('authHttpInterceptor', function (APP_CONFIG) {
+		return {
+			request: function (config) {
+				if (config.url.includes(APP_CONFIG.layersAPI)) {
+					config.headers.Authorization = 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey);
+				}
+				return config;
+			}
+		};
+	})
+	.config(function ($httpProvider) {
+	  $httpProvider.interceptors.push('authHttpInterceptor');
+	})	
 	//Arguably, this should go somewhere else, since it's not part of our API server. But then again, I don't see a need to create a whole other service for it so... 
 	.factory('Nominatim', function($resource, APP_CONFIG) {
 		return $resource('http://nominatim.openstreetmap.org/search/:place', {}, {

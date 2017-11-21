@@ -72,6 +72,7 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 	//MapSettings.initializeMap();
 	MapSettings.initializeMap()
 	.then(function() {
+		ProjectSettings.fetchProjects(); //Good a place as any, I guess
 		olData.getMap().then(function(map) {
 			console.log("setting map 2");
 			MapSettings.data.theMap = map;

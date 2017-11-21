@@ -18,7 +18,7 @@
 	
 		</form>
 		<md-button ng-click="login()" class="md-primary md-raised">Login</md-button>
-		<md-button ng-click="register('show')" class="md-accent">Register</md-button>
+		<md-button ng-click="register('show')" class="md-accent">Register</md-button><br/>
 		<md-button ng-click="requestPWReset($event)" class="md-primary"  style="margin-top:30px">Forgot password</md-button>
 
 	</md-whiteframe>
@@ -67,6 +67,7 @@
 					<div ng-message="required">Email is required</div>
 				</div>
 			</md-input-container>
+			<br/>
 			<md-input-container>
 				<label>Desired Role</label>
 				<md-select name="desiredRole" ng-model="credentials.desiredRole">
@@ -83,9 +84,5 @@
 		<md-button ng-click="register('cancel')" class="md-accent">Cancel</md-button>		
 	</md-whiteframe>
 
-	<p layout-padding style="font-size: 12px">
-		The information provided in this tool is provided for the convenience of the AME-UP development team.
-		It should be used for evaluation purposes only and no claims of accuracy or completeness should be assumed.
-	</p>
-	
+		
 </div>

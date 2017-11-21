@@ -22,12 +22,31 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 		//console.log("reportClicked, boxExtent = " + $scope.boxExtent);
 		console.log(event);
 		if (MapSettings.data.aoi == undefined) {
-			showAOIalert(event);
+			//showAOIalert(event);
+			showAlert('AOI required', 'Please specify an Area of Interest first.', event);
+		} else if (!ProjectSettings.data.currentProject) {
+			showAlert('Project required', 'Reports require project parameter definitions. Please define a project first.', event)
 		} else {
 			showReportDialog(event, type);
 		}
 	}
 	
+    let showAlert = function(title, text, event) {
+ 		console.log("show reports alert");
+		alert = $mdDialog.alert({
+			title: title,
+			textContent: text,
+			targetEvent: event,
+			ok: 'Ok'
+		});
+
+		$mdDialog
+			.show( alert )
+			.finally(function() {
+				alert = undefined;
+			});
+    }
+
     let showAOIalert = function(event) {
  		console.log("show AOI alert");
 		alert = $mdDialog.alert({
@@ -85,27 +104,47 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			canvas.toBlob(function (blob) {
 				$scope.thumbURL = URL.createObjectURL(blob)
 				$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
-				$scope.results.$promise.then( () => {
+				$scope.results.$promise.then( function() {
+					//The following logic is to generate appropriate descriptive text for the ME report, based on project type, project height, and 
+					//minimum altitude of the airspace. Arguably, this should all be done in the API server. This would require passing the project
+					//to the reports endpoint and a bunch of string manipulation in the endpoint code. I'm not against that, but for now I am 
+					//keeping it here and letting angular do the string lifting. 
 					if (reportName === 'Military Encroachment') {
 						console.log("post report processing");
-						//$scope.likelihood = "high"; //TODO: depends on Min Altitude and Project type
-						$scope.results.featureTypes.forEach(function(featureType) { //TODO: incorporate project type (height) into this logic
+						$scope.results.featureTypes.forEach(function(featureType) { 
 							console.log("processing featureType");
 							if (featureType.featureType === "Military_flight_corridor_area" ||
 								featureType.featureType === "Mil_special_use_airspace_area") {
 								featureType.features.forEach(function(feature) {
 									console.log("processing feature");
-									if (feature['Minimum Altitude'] <= 1000) {
-										feature['likelihood'] = "high"
-									} else if (feature ['Minimum Altitude'] <= 2000) {
-										feature['likelihood'] = "medium";
-									} else if (feature ['Minimum Altitude'] > 2000) {
-										feature['likelihood'] = "low";
+									let type = null;
+									let height = null;
+									if (project) {
+										type = project.type.name;
+										project.type.attributes.some(attribute => {
+											if (attribute.name === 'height') {
+												height = attribute.value;
+											}
+											return height;  //Returns null or a value. If value, some exits
+										});
+									}
+									
+									if (type === null) { //User has not specified a project, give them worst case
+										feature['likelihood'] = 'high';
+									} else if (type === 'CSP' ||
+											  (type === 'Wind' && height > 500)) {
+										feature['likelihood'] = feature['Minimum Altitude'] <= 1000 ? 'high' : feature['Minimum Altitude'] <= 2000 ? 'medium' :'low';
+									} else if (type === 'Wind' && height <= 500) {
+										feature['likelihood'] = feature['Minimum Altitude'] <= 500 ? 'high' : feature['Minimum Altitude'] <= 2000 ? 'medium' :'low';
+									} else if (type === 'PV') {
+										feature['likelihood'] = feature['Minimum Altitude'] <= 500 ? 'medium' : 'low';
+									} else {	
+										feature['likelihood'] = 'low'; //TODO: Verify this. To handle unrecognized project type (i.e. project type added but this function not updated)
 									}
 									console.log("feature = "); console.log(feature);
 								});
 							}
-							console.log(featureType);
+							console.log(featureType);							
 						});
 					}
 				});
