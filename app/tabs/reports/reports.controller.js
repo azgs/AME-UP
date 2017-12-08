@@ -121,7 +121,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 									let height = null;
 									if (project) {
 										type = project.type.name;
-										project.type.attributes.some(attribute => {
+										project.type.attributes.some(function(attribute) {
 											if (attribute.name === 'height') {
 												height = attribute.value;
 											}

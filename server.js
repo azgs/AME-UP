@@ -1,3 +1,5 @@
+const config = require('./server.config.json');
+
 const express = require('express');
 const app = express();
 const request = require('request');
@@ -37,10 +39,41 @@ app.use('/proxy', function(req, res) {
 	})).pipe(res);
 });
 
+/**
 app.set('port', process.env.PORT || 8000);
 
 app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
 });
+**/
+
+if (config.ignoreCertErrors) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; 
+}
+
+let port;
+let server;
+if (config.useTLS) {
+    port = config.TLSPort; 
+    const options = {
+        key: fs.readFileSync('cert/ameup_private.key'),
+        cert: fs.readFileSync('cert/ameup_usgin_org_cert.cer'),
+        ca: fs.readFileSync('cert/ameup_usgin_org_interm.cer')
+    };    
+    const https = require('https');
+    app.set('port', port);
+	console.log("creating server");
+    server = https.createServer(options, app);
+} else {
+    port = config.nonTLSPort;
+    const http = require('http');
+    app.set('port', port);
+	console.log("creating server");
+    server = http.createServer(app);
+}
+server.listen(port, function () {
+    console.log('Express server listening on port ' + app.get('port'));
+});
+
 
 

@@ -1,0 +1,6 @@
+{
+    "useTLS": true,
+    "ignoreCertErrors": false,
+    "TLSPort": 4430, 
+    "nonTLSPort": 8000
+}

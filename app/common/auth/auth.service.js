@@ -40,7 +40,7 @@ angular.module('AuthService', ['APIService'])
 		
 		let register = function(user) {
 			return $q(function(resolve, reject) {
-				User.register({username:user.username, password:user.password, firstName:user.firstName, lastName:user.lastName, email:user.email, desiredRole:user.desiredRole}, function(user){resolve(user.msg);}, function(response){reject(response.data.msg);});
+				User.register({username:user.username, password:user.password, firstName:user.firstName, lastName:user.lastName, email:user.email, organization:user.organization, city:user.city, reason:user.reason, desiredRole:user.desiredRole, tos:user.tos}, function(user){resolve(user.msg);}, function(response){reject(response.data.msg);});
 			});
 		}
 

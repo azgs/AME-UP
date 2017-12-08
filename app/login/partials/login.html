@@ -3,21 +3,21 @@
 		<form name="loginForm">
 			<md-input-container>
 				<label>Username</label>
-				<input name="username" ng-model="credentials.username" required>
+				<input name="username" ng-model="credentials.username" requiredng-change="validateLoginForm()">
 				<div ng-messages="loginForm.username.$error">
 					<div ng-message="required">Username is required</div>
 				</div>
 			</md-input-container><br/>
 			<md-input-container>
 				<label>Password</label>
-				<input type="password" name="password" ng-model="credentials.password" required>
+				<input type="password" name="password" ng-model="credentials.password" required ng-change="validateLoginForm()">
 				<div ng-messages="loginForm.password.$error">
 					<div ng-message="required">Password is required</div>
 				</div>
 			</md-input-container>
 	
 		</form>
-		<md-button ng-click="login()" class="md-primary md-raised">Login</md-button>
+		<md-button ng-click="login()" class="md-primary md-raised" ng-disabled="!loginFormValid">Login</md-button>
 		<md-button ng-click="register('show')" class="md-accent">Register</md-button><br/>
 		<md-button ng-click="requestPWReset($event)" class="md-primary"  style="margin-top:30px">Forgot password</md-button>
 
@@ -27,50 +27,69 @@
 		<form name="registrationForm">
 			<md-input-container style="margin-top: 10px">
 				<label>Username</label>
-				<input name="username" ng-model="credentials.username" required>
+				<input name="username" ng-model="credentials.username" required ng-change="validateRegForm()">
 				<div ng-messages="registrationForm.username.$error">
 					<div ng-message="required">Username is required</div>
 				</div>
 			</md-input-container><br/>
 			<md-input-container>
 				<label>Password</label>
-				<input type="password" name="password" ng-model="credentials.password" required>
+				<input type="password" name="password" ng-model="credentials.password" required ng-change="validateRegForm()">
 				<div ng-messages="registrationForm.password.$error">
 					<div ng-message="required">Password is required</div>
 				</div>
 			</md-input-container>
 			<md-input-container>
 				<label>Repeat Password</label>
-				<input type="password" name="password2" ng-model="credentials.password2" required>
-				<div ng-messages="registrationForm.password.$error">
-					<div ng-message="required">Password is required</div>
+				<input type="password" name="password2" ng-model="credentials.password2" required compare-to="credentials.password" ng-change="validateRegForm()">
+				<div ng-messages="registrationForm.password2.$error">
+					<div ng-message="required">Password confirmation is required</div>
+					<div ng-message="compareTo">Passwords do not match</div>
 				</div>
 			</md-input-container>
 			<md-input-container>
 				<label>First name</label>
-				<input name="firstname" ng-model="credentials.firstName" required>
+				<input name="firstname" ng-model="credentials.firstName" required ng-change="validateRegForm()">
 				<div ng-messages="registrationForm.firstname.$error">
 					<div ng-message="required">First name is required</div>
 				</div>
 			</md-input-container>
 			<md-input-container>
 				<label>Last name</label>
-				<input name="lastname" ng-model="credentials.lastName" required>
+				<input name="lastname" ng-model="credentials.lastName" required ng-change="validateRegForm()">
 				<div ng-messages="registrationForm.lastname.$error">
 					<div ng-message="required">Last name is required</div>
 				</div>
 			</md-input-container>
 			<md-input-container>
 				<label>Email</label>
-				<input name="email" ng-model="credentials.email" required>
+				<input name="email" ng-model="credentials.email" required ng-change="validateRegForm()">
 				<div ng-messages="registrationForm.email.$error">
 					<div ng-message="required">Email is required</div>
 				</div>
 			</md-input-container>
+			<md-input-container>
+				<label>Organization</label>
+				<input name="organization" ng-model="credentials.organization" required ng-change="validateRegForm()">
+				<div ng-messages="registrationForm.organization.$error">
+					<div ng-message="required">Organization is required</div>
+				</div>
+			</md-input-container>
+			<md-input-container>
+				<label>City</label>
+				<input name="city" ng-model="credentials.city" required ng-change="validateRegForm()">
+				<div ng-messages="registrationForm.city.$error">
+					<div ng-message="required">City is required</div>
+				</div>
+			</md-input-container>
+			<md-input-container>
+				<label>Reason for registering</label>
+				<input name="reason" ng-model="credentials.reason">
+			</md-input-container>
 			<br/>
 			<md-input-container>
 				<label>Desired Role</label>
-				<md-select name="desiredRole" ng-model="credentials.desiredRole">
+				<md-select name="desiredRole" ng-model="credentials.desiredRole" required ng-change="validateRegForm()">
 					<md-option ng-repeat="role in roles" value="{{role.id}}">
 						{{role.name}}
 					</md-option>
@@ -79,8 +98,22 @@
 					<div ng-message="required">Desired role is required</div>
 				</div>
 			</md-input-container>
+			<br/>
+			<md-input-container>
+				<div class="md-title" style="margin-top:1em">Terms of Service</div>
+				<div style="font-size: 12px;margin-top:1em">
+					This web tool was created for informational purposes only and is derived from multiple digital databases and other sources that are subject to change.  Each user of this web tool is responsible for determining its suitability for his or her intended use or purpose and acknowledges that no element of it constitutes legal advice.  The producers and hosts of this web tool make no claims, representations, or warranties, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, freedom from computer virus, or concerning validity, reliability or accuracy, as to any information accessible herein. Users of this web tool are strongly cautioned to inquire directly with appropriate agencies and independently verify all relevant information before making any decisions. Neither the producers of this web tool nor their affiliates, employees or agents, shall be liable for any loss or damages, consequential or otherwise, including but not limited to time, money, or goodwill, arising from the use of this web tool or in reliance upon the information contained herein or linked hereto.  In using these data, users agree to indemnify, defend, and hold harmless the producers and hosts of this web tool from any and all liability of any nature arising out of or resulting from such use.<br/><br/>
+					By registering for an account you are acknowledging that you understand and agree to these terms.
+				</div>				
+				<md-checkbox name="tos" ng-model="credentials.tos" style="margin-top:1em" required ng-change="validateRegForm()">
+					I agree
+				</md-checkbox>
+				<div ng-messages="registrationForm.tos.$error">
+					<div ng-message="required">Checking this box is required</div>
+				</div>
+			</md-input-container>
 		</form>
-		<md-button ng-click="register('submit')" class="md-primary md-raised">Register</md-button>
+		<md-button ng-click="register('submit')" class="md-primary md-raised" ng-disabled="!regFormValid">Register</md-button>
 		<md-button ng-click="register('cancel')" class="md-accent">Cancel</md-button>		
 	</md-whiteframe>
 

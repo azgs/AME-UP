@@ -5,14 +5,19 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 		templateUrl: 'login/partials/login.html',
 		controller: function LoginController($scope, Auth, $state, $mdDialog, Roles, PWReset, $q) {
 			$scope.credentials = {
-				username: '',
-				password: '',
-				password2: '',
-				firstName: '',
-				lastName: '',
-				email: '',
-				desiredRole: ''
-			};
+				username: null,
+				password: null,
+				password2: null,
+				firstName: null,
+				lastName: null,
+				email: null,
+				organization: null,
+				city: null,
+				reason: null,
+				desiredRole: null,
+				tos: false
+
+				};
 			
 			$scope.showRegistration = false;
 			
@@ -35,6 +40,11 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 				);
 			};
 						
+			$scope.loginFormValid = false;
+			$scope.validateLoginForm = function() {
+				$scope.loginFormValid = $scope.credentials.username && $scope.credentials.password;
+			}
+
 			$scope.login = function () {
 				Auth.login($scope.credentials).then(function(msg) {
 					console.log("logged in");
@@ -48,6 +58,21 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 				});
 			}
 			
+			$scope.regFormValid = false;
+			$scope.validateRegForm = function() {
+				$scope.regFormValid = $scope.credentials.username && 
+					($scope.credentials.password &&
+					$scope.credentials.password2 &&
+					$scope.credentials.password === $scope.credentials.password2) &&
+					$scope.credentials.firstName &&
+					$scope.credentials.lastName &&
+					$scope.credentials.email &&
+					$scope.credentials.organization &&
+					$scope.credentials.city &&
+					$scope.credentials.desiredRole &&
+					$scope.credentials.tos === true;
+			}
+
 			$scope.register = function(action) {
 				console.log("action = " + action);
 				if (action == 'show') {
@@ -59,7 +84,7 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 					} else {
 						Auth.register($scope.credentials).then(function(msg) {
 							console.log("registered");
-							$scope.showAlert('Registration submitted', 'You will receive an email when your registration has been approved.');
+							$scope.showAlert('Registration submitted', 'You will receive an email when your registration has been approved (within five business days).');
 							$scope.showRegistration = false;
 						}, function(errMsg) {
 							console.log("not registered");
@@ -127,4 +152,27 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 			}
 		}
 	});
+	
+//Custom directive to compare password fields in registration	
+var compareTo = function() {
+    return {
+        require: "ngModel",
+        scope: {
+            otherModelValue: "=compareTo"
+        },
+        link: function(scope, element, attributes, ngModel) {
+
+            ngModel.$validators.compareTo = function(modelValue) {
+                return modelValue == scope.otherModelValue;
+            };
+
+            scope.$watch("otherModelValue", function() {
+                ngModel.$validate();
+            });
+        }
+    };
+};
+
+angular.module('login').directive("compareTo", compareTo);
+				
 	

@@ -161,7 +161,8 @@ angular.module('APIService', ['ngResource'])
 	.factory('authHttpInterceptor', function (APP_CONFIG) {
 		return {
 			request: function (config) {
-				if (config.url.includes(APP_CONFIG.layersAPI)) {
+				//if (config.url.includes(APP_CONFIG.layersAPI)) { 
+				if (config.url.indexOf(APP_CONFIG.layersAPI) !== -1) {
 					config.headers.Authorization = 'Bearer ' + window.localStorage.getItem(APP_CONFIG.tokenKey);
 				}
 				return config;
