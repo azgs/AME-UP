@@ -271,7 +271,8 @@ angular.module('MapToolsService')
 						if (featureRequest != undefined && featureSource.layers[0].source.wfs.url != undefined) {
 							//TODO: if url is ameup geoserver, change to server api url (could possibly be done in proxy)
 							//if (featureSource.layers[0].source.wfs.url.includes('http://ameup.usgin.org:8080/geoserver/wfs')) {
-							if (featureSource.layers[0].source.wfs.url.indexOf('http://ameup.usgin.org:8080/geoserver/wfs') !== -1) {
+							//if (featureSource.layers[0].source.wfs.url.indexOf('http://ameup.usgin.org:8080/geoserver/wfs') !== -1) {
+							if (featureSource.layers[0].source.wfs.url.indexOf('http://ameup.usgin.org') !== -1) {
 								let wfsResults = WFSProxy.xmlQuery({xmlBody: new XMLSerializer().serializeToString(featureRequest)});
 								wfsResults.$promise.then( function() {
 									console.log("wfsResults = ");console.log(wfsResults);

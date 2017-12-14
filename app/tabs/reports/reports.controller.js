@@ -101,7 +101,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			$scope.results.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);});
 			*/
 			let canvas = document.getElementsByTagName('canvas')[0]; //This magically grabs the map canvas
-			canvas.toBlob(function (blob) {
+			canvas.toBlob(function (blob) { //TODO: this doesn't work in IE
 				$scope.thumbURL = URL.createObjectURL(blob)
 				$scope.results = Reports.get({report: reportName, filter: new ol.format.GeoJSON().writeGeometry(MapSettings.data.aoi.clone().transform("EPSG:3857", "EPSG:4326"))});
 				$scope.results.$promise.then( function() {
