@@ -25,7 +25,7 @@ angular.module('ReportsTabController', ['APIService', 'SettingsService', 'ngMate
 			//showAOIalert(event);
 			showAlert('AOI required', 'Please specify an Area of Interest first.', event);
 		} else if (!ProjectSettings.data.currentProject) {
-			showAlert('Project required', 'Reports require project parameter definitions. Please define a project first.', event)
+			showAlert('Project required', 'Reports require a declared project type (e.g., wind) in order to be generated. Please define a project for the selected area of interest before attempting to create a report. A new project can be created by accessing the main menu icon located in the upper left corner.', event)
 		} else {
 			showReportDialog(event, type);
 		}
