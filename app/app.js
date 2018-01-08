@@ -119,8 +119,13 @@ var app = angular.module('mapApp', [
 	browserCheck();
 })
 
-.run(function ($rootScope, $state, Auth, AUTH_EVENTS) {
-  $rootScope.$on('$stateChangeStart', function (event,next, nextParams, fromState) {
+.run(function ($rootScope, $state, Auth, AUTH_EVENTS, APP_CONFIG) {
+	//shut down logging if so configured
+	if (APP_CONFIG.muteLogging) {
+		console.log = function() {};
+	}
+	
+	$rootScope.$on('$stateChangeStart', function (event,next, nextParams, fromState) {
 	  
 	//redirect method from this thread: https://github.com/angular-ui/ui-router/issues/1584
 	if (next.redirectTo) {
