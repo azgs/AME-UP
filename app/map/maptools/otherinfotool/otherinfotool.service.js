@@ -163,8 +163,6 @@ angular.module('MapToolsService')
 			console.log("keys"); console.log(data.keys);
 			console.log("valuesList"); console.log(data.valuesList);
 			
-			//TODO: add features to map
-			/***/
 			features2.clear();
 			let features = [];
 			try {
@@ -180,7 +178,6 @@ angular.module('MapToolsService')
 			if (features.length > 0) {
 				features2.addFeatures(features);
 			}
-			/***/
 			
 		}					
 
@@ -269,9 +266,6 @@ angular.module('MapToolsService')
 						featureRequest = featureRequest.hasChildNodes() ? featureRequest : undefined;
 									
 						if (featureRequest != undefined && featureSource.layers[0].source.wfs.url != undefined) {
-							//TODO: if url is ameup geoserver, change to server api url (could possibly be done in proxy)
-							//if (featureSource.layers[0].source.wfs.url.includes('http://ameup.usgin.org:8080/geoserver/wfs')) {
-							//if (featureSource.layers[0].source.wfs.url.indexOf('http://ameup.usgin.org:8080/geoserver/wfs') !== -1) {
 							if (featureSource.layers[0].source.wfs.url.indexOf('http://ameup.usgin.org') !== -1) {
 								let wfsResults = WFSProxy.xmlQuery({xmlBody: new XMLSerializer().serializeToString(featureRequest)});
 								wfsResults.$promise.then( function() {
@@ -292,7 +286,7 @@ angular.module('MapToolsService')
 									//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
 									fetch('/proxy/' + featureSource.layers[0].source.wfs.url, {
 										method: 'POST',
-										body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
+										body: new XMLSerializer().serializeToString(featureRequest) 
 										//body: queryString //For use with the xml hack above
 									}).then(function(response) {
 										console.log(response);

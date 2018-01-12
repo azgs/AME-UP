@@ -244,7 +244,7 @@ angular.module('MapToolsService')
 					srsName: 'EPSG:3857',
 					featureNS: layer.source.wfs.feature_namespace, 
 					featurePrefix: layer.source.wfs.feature_prefix, 
-					featureTypes: [featureType], //TODO: build this to include all active layers (that we host)
+					featureTypes: [featureType], 
 					outputFormat: 'application/json',
 					//Need to add the following filter, but it doesn't exist in the version of OpenLayers (3.16.0) loaded by the bower install of angular-openlayers-directive.
 					//filter: ol.format.ogc.filter.intersects(paramStub.geometryName, new ol.geom.Point(thePoint), 'urn:ogc:def:crs:EPSG::3857')
@@ -259,18 +259,6 @@ angular.module('MapToolsService')
 							
 				if (featureRequest != undefined && layer.source.wfs.url != undefined) {
 					let body;
-					/*
-					//TODO: This is a terrible hack. I need to use ol.format.ogc.filter.intersects filter, but it doesn't exist in the version of OpenLayers (3.16.0) loaded by the bower install of angular-openlayers-directive. I could copy the version of openlayers I want (3.18) over the other one in bower_components, but that would break on any new bower install. So, instead, I'm hacking in the needed XML. It's ugly and I hate it but it does what I need. 
-					let queryString = new XMLSerializer().serializeToString(featureRequest);
-					console.log("queryString = ");
-					console.log(queryString);
-					let filterString = '><Filter xmlns="http://www.opengis.net/ogc"><Intersects><PropertyName>' + layer.source.wfs.geometry_name + '</PropertyName><Point xmlns="http://www.opengis.net/gml" srsName="urn:ogc:def:crs:EPSG::3857"><pos>' + thePoint[0] + ' ' + thePoint[1] + '</pos></Point></Intersects></Filter></Query>';
-					console.log("filterString =");
-					console.log(filterString);
-					queryString = queryString.replace("/>", filterString)
-					console.log("queryString =");
-					console.log(queryString);
-					*/
 					
 					// then post the request and add the received features to a layer
 					try {
@@ -278,7 +266,7 @@ angular.module('MapToolsService')
 						//Yes, I am being obstinate in including this code when the old stuff will work in all browsers. That's me: obstinate.
 						fetch('/proxy/' + layer.source.wfs.url, {
 							method: 'POST',
-							body: new XMLSerializer().serializeToString(featureRequest) //TODO: this is the one I'd use if I didn't have to hack the filter as above
+							body: new XMLSerializer().serializeToString(featureRequest) 
 							//body: queryString //For use with the xml hack above
 						}).then(function(response) {
 							console.log(response);

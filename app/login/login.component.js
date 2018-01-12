@@ -48,9 +48,6 @@ angular.module('login', ['ngMaterial', 'AuthService', 'APIService'])
 			$scope.login = function () {
 				Auth.login($scope.credentials).then(function(msg) {
 					console.log("logged in");
-					//TODO: This sequence is lame, but I can't at the moment find a better way to make sure the api service gets refreshed with the new token
-					//window.location.reload();
-					//window.location.assign('/#!/map');
 					$state.go('map');
 				}, function(errMsg) {
 					console.log("not logged in");

@@ -6,44 +6,8 @@ angular.module('MapController', ['APIService', 'SettingsService', 'MapToolsServi
 		console.log("PRINTING CALL STACK");
 		console.log( stack );
 	}	
-	
-	//TODO: delete this when not needed
-	let showToast = function(message) {
-		$mdToast.show(
-			$mdToast.simple()
-				.textContent(message)
-				.hideDelay(3000)
-		);
-	};
-	
+		
 	$scope.showResultsTab = false;
-	
-	//TODO: seems like we might have to do this to make sure map handle is reset after navigation. Look at this more closely and make sure.
-	/**
-	$rootScope.$on('mapInitialized', function(event, data) {
-		console.log('received mapInitialized');
-		olData.getMap().then(function(map) {
-			console.log("setting map 2");
-			MapSettings.data.theMap = map;
-			$scope.data.aoi = undefined;
-			
-			let mousePosition = new ol.control.MousePosition({
-				coordinateFormat: ol.coordinate.createStringXY(2),
-				projection: 'EPSG:4326',
-				className: 'ol-scale-line-inner',
-				target: document.getElementById('positionDisplay'),
-				undefinedHTML: '&nbsp;'
-			});
-
-			map.addControl(mousePosition);
-
-			let scaleLine = new ol.control.ScaleLine({ 
-				units: 'us'
-			});
-			map.addControl(scaleLine);				
-		});
-	});
-	**/
 		
 	/*	
 	olData.getMap().then(function(map) {

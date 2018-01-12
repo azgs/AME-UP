@@ -26,7 +26,6 @@ angular.module('ProjectProperties', ['ngMaterial', 'APIService'])
 					if (ProjectSettings.data.currentProject && projectType.name === ProjectSettings.data.currentProject.type.name) {
 						//console.log("found it");
 						data[index] = ProjectSettings.data.currentProject.type;
-						//$scope.selectedType = data[index];//TODO: clone this instead using direct ref to avoid contamination after Cancel
 						$ctrl.selectedType = data[index];//TODO: clone this instead using direct ref to avoid contamination after Cancel
 						$scope.validateForm();
 					}
@@ -50,7 +49,7 @@ angular.module('ProjectProperties', ['ngMaterial', 'APIService'])
 				});						
 			}); 
 			
-			$scope.projectTypes.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);}); //TODO: make use of this in html
+			$scope.projectTypes.$promise.catch(function() {$scope.error = "There was a problem communicating with the server"; console.log($scope.error);}); 
 			
 			$scope.validateForm = function() {
 				//console.log("validate form, name = " + $scope.name);console.log($scope.selectedType);

@@ -67,20 +67,7 @@ angular.module('SettingsService', ['APIService'])
 		let toggleShowAllLayers = function(group) {
 			group.showAll = !group.showAll;
 		};
-		
-		/***
-		let getAOIType = function(geometry) {
-			//TODO: This is stinky. Should make this explicit in db table and API
-			const extent = geometry.getExtent();
-			const coords = geometry.getCoordinates();
-			if (coords[1][0] === extent[0] && coords[1][1] === extent[1] && coords[3][0] === extent[2] && coords[3][1] === extent[3]) {
-				return "bbox";
-			} else {
-				return "polygon";
-			}
-		}
-		***/
-		
+				
 		let initializeMap = function (project) {
 			return $q(function(resolve, reject) {
 				console.log("MapSettings initializeMap enter");

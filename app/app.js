@@ -48,7 +48,6 @@ var app = angular.module('mapApp', [
   .state('map', {
     url: '/map',
     templateUrl: 'map/map.html',
-	//controller: 'MapController' //TODO: either put this here or in html template, not both or will be called twice
   })
   .state('pwreset', {
     url: '/pwreset/:time/:token',
